@@ -1,0 +1,91 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}Đơn Vị Tính - Hệ Thống Kho AI{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+    <!-- Tiêu đề -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Thêm / Sửa Đơn Vị Tính</h1>
+            <p class="text-sm text-gray-500 mt-1">Điền thông tin chi tiết cho đơn vị tính sản phẩm trong kho.</p>
+        </div>
+        <a href="{% url 'don_vi_tinh_list' %}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+            Quay lại
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <!-- Hiển thị các trường của form -->
+            <div class="space-y-4 warehouse-form-fields">
+                {{ form.as_p }}
+            </div>
+
+            <!-- Nút bấm thao tác -->
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+                <a href="{% url 'don_vi_tinh_list' %}" class="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+                    Hủy
+                </a>
+                <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors cursor-pointer">
+                    Lưu thông tin
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Định dạng chuẩn cho form.as_p để giao diện đẹp mắt và ăn khớp với Tailwind */
+    .warehouse-form-fields p {
+        margin-bottom: 1rem;
+    }
+    .warehouse-form-fields label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.25rem;
+    }
+    .warehouse-form-fields input, 
+    .warehouse-form-fields select, 
+    .warehouse-form-fields textarea {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: #374151;
+        outline: none;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    .warehouse-form-fields input:focus, 
+    .warehouse-form-fields select:focus, 
+    .warehouse-form-fields textarea:focus {
+        border-color: #2563eb;
+        ring: 2px solid #2563eb;
+    }
+    .warehouse-form-fields .helptext {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    .warehouse-form-fields .errorlist {
+        color: #dc2626;
+        font-size: 0.75rem;
+        list-style: none;
+        padding: 0;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}

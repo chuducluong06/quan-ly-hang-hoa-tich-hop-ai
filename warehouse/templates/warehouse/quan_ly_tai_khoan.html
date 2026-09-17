@@ -1,0 +1,153 @@
+{% extends 'warehouse/base.html' %}
+{% block title %}Quản Lý Tài Khoản - Quản Lý Kho AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- TIÊU ĐỀ TRANG -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold fs-4 mb-1" style="color: var(--text-primary);">Quản Lý Tài Khoản Người Dùng</h2>
+            <p class="text-secondary fs-6 mb-0">Quản lý quyền truy cập và trạng thái kích hoạt tài khoản của nhân viên.</p>
+        </div>
+        <div>
+            <a href="{% url 'nhat_ky_hoat_dong' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+                <i class="bi bi-clock-history"></i> Xem Nhật Ký Hoạt Động
+            </a>
+        </div>
+    </div>
+
+    <!-- FORM THÊM TÀI KHOẢN MỚI -->
+    <div class="card border-0 mb-4 shadow-sm">
+        <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center gap-2">
+            <i class="bi bi-person-plus-fill fs-5 text-primary"></i>
+            <h5 class="card-title fw-bold fs-6 mb-0" style="color: var(--text-primary);">Thêm Tài Khoản Mới</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'quan_ly_tai_khoan' %}">
+                {% csrf_token %}
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="ten_dang_nhap" class="form-label text-uppercase fs-7 fw-bold text-secondary">Tên đăng nhập</label>
+                        <input type="text" class="form-control" id="ten_dang_nhap" name="ten_dang_nhap" placeholder="Nhập tên đăng nhập..." required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="mat_khau" class="form-label text-uppercase fs-7 fw-bold text-secondary">Mật khẩu</label>
+                        <input type="password" class="form-control" id="mat_khau" name="mat_khau" placeholder="Nhập mật khẩu..." required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="role" class="form-label text-uppercase fs-7 fw-bold text-secondary">Vai trò</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="THUKHO">Thủ kho</option>
+                            <option value="KETOANKHO">Kế toán kho</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-person-plus"></i> Thêm Tài Khoản
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BẢNG DANH SÁCH TÀI KHOẢN -->
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center gap-2">
+            <i class="bi bi-list-ul fs-5 text-primary"></i>
+            <h5 class="card-title fw-bold fs-6 mb-0" style="color: var(--text-primary);">Danh Sách Tài Khoản ({{ users|length }})</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Tài khoản</th>
+                        <th>Vai trò (Phân quyền)</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <!-- Tên tài khoản -->
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="user-avatar flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.85rem; border-radius: 10px;">
+                                    {{ u.ten_dang_nhap|first|upper }}
+                                </div>
+                                <div>
+                                    <span class="fw-semibold" style="color: var(--text-primary);">{{ u.ten_dang_nhap }}</span>
+                                    {% if u.role == 'ADMIN' %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger ms-1 px-2 py-1" style="font-size: 0.65rem;">ROOT</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Vai trò -->
+                        <td>
+                            {% if u.role == 'ADMIN' %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-shield-fill-check"></i> Quản trị viên
+                                </span>
+                            {% else %}
+                                <form action="{% url 'doi_quyen_user' u.id %}" method="POST" class="d-inline-block">
+                                    {% csrf_token %}
+                                    <select name="role" onchange="this.form.submit()" class="form-select form-select-sm py-1 cursor-pointer" style="width: 150px;">
+                                        <option value="THUKHO" {% if u.role == 'THUKHO' %}selected{% endif %}>🔧 Thủ kho</option>
+                                        <option value="KETOANKHO" {% if u.role == 'KETOANKHO' %}selected{% endif %}>📊 Kế toán kho</option>
+                                    </select>
+                                </form>
+                            {% endif %}
+                        </td>
+
+                        <!-- Trạng thái -->
+                        <td>
+                            {% if u.is_active %}
+                                <span class="badge bg-success bg-opacity-10 text-success px-2.5 py-1.5 d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-check-circle-fill"></i> Đang hoạt động
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger px-2.5 py-1.5 d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-x-circle-fill"></i> Đã khóa
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Thao tác -->
+                        <td class="text-end pe-4">
+                            {% if u.role != 'ADMIN' %}
+                                <form action="{% url 'doi_trang_thai_user' u.id %}" method="POST" class="d-inline-block">
+                                    {% csrf_token %}
+                                    {% if u.is_active %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm px-3" onclick="return confirm('Bạn có chắc chắn muốn khóa tài khoản {{ u.ten_dang_nhap }}?');">
+                                            <i class="bi bi-lock-fill me-1"></i> Khóa
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-outline-success btn-sm px-3">
+                                            <i class="bi bi-unlock-fill me-1"></i> Mở khóa
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            {% else %}
+                                <span class="text-secondary fst-italic fs-7">
+                                    <i class="bi bi-shield-lock text-primary me-1"></i> Bảo vệ
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-secondary">
+                            <i class="bi bi-people display-6 d-block mb-2 opacity-50"></i>
+                            Không tìm thấy tài khoản nào trong hệ thống.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

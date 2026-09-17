@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_edit %}Chỉnh Sửa Sản Phẩm{% else %}Thêm Sản Phẩm Mới{% endif %} - Quản Lý Kho AI</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            color: #333333;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e3e6f0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-3 shadow-sm">
+        <a class="navbar-brand fw-bold text-primary" href="{% url 'dashboard' %}">
+            <i class="bi bi-box-seam me-2"></i>QUẢN LÝ KHO AI
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+            <a href="{% url 'san_pham_list' %}" class="btn btn-outline-secondary btn-sm me-2">
+                <i class="bi bi-arrow-left me-1"></i>Danh sách hàng
+            </a>
+            <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>Đăng xuất
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="card rounded-4 shadow-sm p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                        <h4 class="fw-bold text-dark mb-0">
+                            {% if is_edit %}
+                                <i class="bi bi-pencil-square text-primary me-2"></i>Chỉnh Sửa Sản Phẩm: {{ san_pham.ten_hang }}
+                            {% else %}
+                                <i class="bi bi-plus-circle text-primary me-2"></i>Thêm Sản Phẩm Mới
+                            {% endif %}
+                        </h4>
+                        <a href="{% url 'san_pham_list' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Hủy
+                        </a>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Mã hàng <span class="text-danger">*</span></label>
+                                <input type="text" name="ma_hang" class="form-control" required
+                                       placeholder="VD: SP001, IP15..."
+                                       value="{% if is_edit %}{{ san_pham.ma_hang }}{% endif %}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
+                                <input type="text" name="ten_hang" class="form-control" required
+                                       placeholder="VD: Điện thoại iPhone 15..."
+                                       value="{% if is_edit %}{{ san_pham.ten_hang }}{% endif %}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Nhóm hàng</label>
+                                <select name="nhom_hang_id" class="form-select">
+                                    <option value="">-- Chưa phân nhóm --</option>
+                                    {% for nhom in danh_sach_nhom %}
+                                    <option value="{{ nhom.id }}" {% if san_pham.nhom_hang_id == nhom.id %}selected{% endif %}>
+                                        {{ nhom.ten_nhom }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Tồn tối thiểu</label>
+                                <input type="number" name="ton_toi_thieu" class="form-control" min="0" required
+                                       value="{% if is_edit %}{{ san_pham.ton_toi_thieu }}{% else %}5{% endif %}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Giá nhập (VNĐ)</label>
+                                <input type="number" step="any" name="gia_nhap" class="form-control" min="0" required
+                                       placeholder="0"
+                                       value="{% if is_edit %}{{ san_pham.gia_nhap|floatformat:0 }}{% else %}0{% endif %}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Giá xuất (VNĐ)</label>
+                                <input type="number" step="any" name="gia_xuat" class="form-control" min="0" required
+                                       placeholder="0"
+                                       value="{% if is_edit %}{{ san_pham.gia_xuat|floatformat:0 }}{% else %}0{% endif %}">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a href="{% url 'san_pham_list' %}" class="btn btn-secondary px-4">Hủy</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-save me-1"></i>{% if is_edit %}Lưu thay đổi{% else %}Tạo sản phẩm{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

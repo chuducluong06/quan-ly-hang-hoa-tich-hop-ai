@@ -1,0 +1,155 @@
+{% extends 'warehouse/base.html' %}
+{% block title %}Danh sách Nhà cung cấp - Warehouse AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Tiêu đề trang -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-1" style="color: var(--text-primary);">
+                <i class="bi bi-truck me-2" style="color: var(--accent-primary);"></i>Quản lý Nhà cung cấp
+            </h4>
+            <p class="mb-0 small" style="color: var(--text-secondary);">Quản lý thông tin đối tác và nhà cung cấp hàng hóa cho hệ thống kho.</p>
+        </div>
+    </div>
+
+    <!-- Content Body -->
+    <div class="card shadow-sm border-0" style="background: var(--bg-card); border-color: var(--border-color) !important;">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background: var(--bg-secondary) !important; border-color: var(--border-color) !important;">
+            <h5 class="mb-0" style="color: var(--accent-primary);">
+                <i class="bi bi-list-columns me-2"></i> Danh sách nhà cung cấp
+            </h5>
+            <a href="{% url 'nha_cung_cap_add' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i> Thêm nhà cung cấp
+            </a>
+        </div>
+        <div class="card-body">
+            <!-- Search & Filter Form -->
+            <form method="GET" class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="keyword" value="{{ request.GET.keyword }}" placeholder="Tìm kiếm theo tên, mã hoặc SĐT...">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">
+                        <i class="bi bi-search me-1"></i> Tìm kiếm
+                    </button>
+                </div>
+            </form>
+
+            <!-- Table Data -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead style="background: var(--bg-secondary);">
+                        <tr>
+                            <th style="background: var(--bg-secondary); color: var(--text-secondary);">Mã NCC</th>
+                            <th style="background: var(--bg-secondary); color: var(--text-secondary);">Tên nhà cung cấp</th>
+                            <th style="background: var(--bg-secondary); color: var(--text-secondary);">Người liên hệ</th>
+                            <th style="background: var(--bg-secondary); color: var(--text-secondary);">Số điện thoại</th>
+                            <th style="background: var(--bg-secondary); color: var(--text-secondary);">Email</th>
+                            <th style="background: var(--bg-secondary); color: var(--text-secondary);">Địa chỉ</th>
+                            <th class="text-center" style="background: var(--bg-secondary); color: var(--text-secondary);">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ncc in nha_cung_caps %}
+                        <tr>
+                            <td><strong style="color: var(--text-primary);">{{ ncc.ma_ncc }}</strong></td>
+                            <td style="color: var(--text-primary);">{{ ncc.ten_ncc }}</td>
+                            <td style="color: var(--text-secondary);">{{ ncc.nguoi_lien_he }}</td>
+                            <td style="color: var(--text-secondary);">{{ ncc.sdt }}</td>
+                            <td style="color: var(--text-secondary);">{{ ncc.email }}</td>
+                            <td style="color: var(--text-secondary);">{{ ncc.dia_chi }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'nha_cung_cap_edit' ncc.pk %}" class="btn btn-sm btn-outline-warning" title="Sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{% url 'nha_cung_cap_delete' ncc.pk %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa nhà cung cấp này?');">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <!-- Dữ liệu mẫu minh họa chỉ hiện khi database chưa có bản ghi nào và được gán ID giả lập (1, 2, 3) -->
+                        <tr>
+                            <td><strong style="color: var(--text-primary);">NCC001</strong></td>
+                            <td style="color: var(--text-primary);">Công ty TNHH Công nghệ ABC</td>
+                            <td style="color: var(--text-secondary);">Nguyễn Văn A</td>
+                            <td style="color: var(--text-secondary);">0912345678</td>
+                            <td style="color: var(--text-secondary);">contact@abc-tech.vn</td>
+                            <td style="color: var(--text-secondary);">123 Đường Láng, Đống Đa, Hà Nội</td>
+                            <td class="text-center">
+                                <a href="{% url 'nha_cung_cap_edit' 1 %}" class="btn btn-sm btn-outline-warning" title="Sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{% url 'nha_cung_cap_delete' 1 %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa nhà cung cấp này?');">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--text-primary);">NCC002</strong></td>
+                            <td style="color: var(--text-primary);">Tập đoàn Điện tử XYZ</td>
+                            <td style="color: var(--text-secondary);">Trần Thị B</td>
+                            <td style="color: var(--text-secondary);">0987654321</td>
+                            <td style="color: var(--text-secondary);">info@xyzelectronics.com</td>
+                            <td style="color: var(--text-secondary);">456 Nguyễn Trãi, Thanh Xuân, Hà Nội</td>
+                            <td class="text-center">
+                                <a href="{% url 'nha_cung_cap_edit' 2 %}" class="btn btn-sm btn-outline-warning" title="Sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{% url 'nha_cung_cap_delete' 2 %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa nhà cung cấp này?');">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color: var(--text-primary);">NCC003</strong></td>
+                            <td style="color: var(--text-primary);">Công ty CP Thiết bị Văn phòng Minh Long</td>
+                            <td style="color: var(--text-secondary);">Lê Văn C</td>
+                            <td style="color: var(--text-secondary);">0905112233</td>
+                            <td style="color: var(--text-secondary);">minhlong@office.vn</td>
+                            <td style="color: var(--text-secondary);">789 Cầu Giấy, Hà Nội</td>
+                            <td class="text-center">
+                                <a href="{% url 'nha_cung_cap_edit' 3 %}" class="btn btn-sm btn-outline-warning" title="Sửa">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{% url 'nha_cung_cap_delete' 3 %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa nhà cung cấp này?');">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-end mb-0">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" tabindex="-1">Trước</a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

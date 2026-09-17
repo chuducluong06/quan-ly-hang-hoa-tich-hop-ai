@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Quản Lý Kho AI</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            color: #333333;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background-color: #ffffff;
+            border-right: 1px solid #e3e6f0;
+        }
+
+        .sidebar .nav-link {
+            color: #5a5c69;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #f8f9fc;
+            color: #4e73df;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #4e73df;
+            color: #ffffff;
+        }
+
+        .sidebar-heading {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #b7b9cc;
+            font-weight: 700;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            padding-left: 0.75rem;
+        }
+
+        .card-stat {
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            transition: transform 0.2s;
+        }
+
+        .card-stat:hover {
+            transform: translateY(-2px);
+        }
+
+        .bg-stat-blue {
+            background-color: #4e73df;
+        }
+
+        .bg-stat-yellow {
+            background-color: #f6c23e;
+        }
+
+        .bg-stat-green {
+            background-color: #1cc88a;
+        }
+
+        .table thead th {
+            background-color: #f8f9fc;
+            color: #4e73df;
+            font-weight: 600;
+            border-bottom: 2px solid #e3e6f0;
+        }
+
+        .table td, .table th {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
+                <div class="d-flex align-items-center mb-3 text-decoration-none">
+                    <i class="bi bi-box-seam fs-3 text-primary me-2"></i>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Quản Lý Kho Có Tích Hợp AI</h6>
+                        <small class="text-muted fs-7">Nhóm 07</small>
+                    </div>  
+                </div>
+
+                <hr class="text-muted opacity-25">
+
+                <ul class="nav flex-column">
+                    <li class="sidebar-heading">Tổng quan</li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'dashboard' %}">
+                            <i class="bi bi-speedometer2 me-2"></i>Bảng Điều Khiển
+                        </a>
+                    </li>
+
+                    <li class="sidebar-heading">Nghiệp vụ kho</li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'phieu_nhap_list' %}">
+                            <i class="bi bi-box-arrow-in-down me-2"></i>Nhập Kho
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'phieu_xuat_list' %}">
+                            <i class="bi bi-box-arrow-up-right me-2"></i>Xuất Kho
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'thong_ke_nxt' %}">
+                            <i class="bi bi-file-earmark-bar-graph me-2"></i>Báo Cáo Nhập Xuất Tồn
+                        </a>
+                    </li>
+
+                    <li class="sidebar-heading">Quản lý danh mục</li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'san_pham_list' %}">
+                            <i class="bi bi-boxes me-2"></i>Hàng Hóa & Tồn Kho
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'nhom_hang_list' %}">
+                            <i class="bi bi-tags me-2"></i>Nhóm Hàng
+                        </a>
+                    </li>
+                    <!-- ĐÃ BỔ SUNG: Đơn Vị Tính ra menu chính -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'don_vi_tinh' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'don_vi_tinh_list' %}">
+                            <i class="bi bi-balance me-2"></i>Đơn Vị Tính
+                        </a>
+                    </li>
+                    <!-- ĐÃ BỔ SUNG: Nhà Cung Cấp ra menu chính -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'nha_cung_cap' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'nha_cung_cap_list' %}">
+                            <i class="bi bi-truck me-2"></i>Nhà Cung Cấp
+                        </a>
+                    </li>
+
+                    <li class="sidebar-heading">Trí tuệ nhân tạo (AI)</li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ai_assistant' %}">
+                            <i class="bi bi-robot me-2"></i>Dự Báo & Trợ Lý AI
+                        </a>
+                    </li>
+
+                    <!-- HỆ THỐNG / QUẢN TRỊ ADMIN -->
+                    <li class="sidebar-heading text-danger">Hệ thống</li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger fw-bold {% if 'quan_ly_tai_khoan' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'quan_ly_tai_khoan' %}">
+                            <i class="bi bi-people-fill me-2"></i>Quản Lý Người Dùng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-danger fw-bold {% if 'nhat_ky_hoat_dong' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'nhat_ky_hoat_dong' %}">
+                            <i class="bi bi-clock-history me-2"></i>Nhật Ký Hoạt Động
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-3">
+                <!-- Header / Navbar Top -->
+                <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-3 shadow-sm">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        <span>Thứ Năm, 03/09/2026</span>
+                    </div>
+
+                    <!-- KHU VỰC HIỂN THỊ TRẠNG THÁI ĐĂNG NHẬP -->
+                    <div class="d-flex align-items-center">
+                        {% if request.session.user_id %}
+                            <div class="dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> {{ request.session.username }} ({{ request.session.role }})
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> Đăng Nhập
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Title Section -->
+                <div class="mb-4">
+                    <h3 class="fw-bold text-dark mb-1">
+                        <i class="bi bi-stars text-primary me-2"></i>Bảng Điều Khiển Quản Lý Kho AI
+                    </h3>
+                    <p class="text-muted">Tổng quan thông số và gợi ý nhập hàng thông minh.</p>
+                </div>
+
+                <!-- Django System Messages -->
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <!-- Metric Cards -->
+                <div class="row g-3 mb-4">
+                    <!-- Total Products -->
+                    <div class="col-md-4">
+                        <div class="card card-stat bg-stat-blue p-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-white-50 fw-semibold mb-1">Tổng số sản phẩm</div>
+                                    <div class="fs-2 fw-bold">{{ tong_so_san_pham|default:tong_san_pham|default:0 }}</div>
+                                </div>
+                                <i class="bi bi-box-seam fs-1 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Alert -->
+                    <div class="col-md-4">
+                        <div class="card card-stat bg-stat-yellow p-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-white-50 fw-semibold mb-1">Cảnh báo tồn kho thấp</div>
+                                    <div class="fs-2 fw-bold">{{ canh_bao_ton_kho|default:hang_sap_het|default:0 }}</div>
+                                </div>
+                                <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Stock Value -->
+                    <div class="col-md-4">
+                        <div class="card card-stat bg-stat-green p-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-white-50 fw-semibold mb-1">Tổng giá trị tồn kho</div>
+                                    <div class="fs-2 fw-bold">{{ tong_gia_tri|floatformat:0|default:"0" }} đ</div>
+                                </div>
+                                <i class="bi bi-currency-dollar fs-1 opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row chứa Bảng Cảnh Báo & Biểu Đồ Thống Kê -->
+                <div class="row g-4">
+                    <!-- Table: Low Stock Items -->
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm rounded-4 p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold text-dark mb-0">
+                                    <i class="bi bi-exclamation-circle text-warning me-2"></i>Danh sách hàng cần nhập thêm
+                                </h5>
+                                <span class="badge bg-light text-muted fw-normal">(Tồn kho &le; Tồn tối thiểu)</span>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Mã hàng</th>
+                                            <th>Tên hàng</th>
+                                            <th class="text-center">Số lượng tồn</th>
+                                            <th class="text-center">Tồn tối thiểu</th>
+                                            <th class="text-end">Giá nhập</th>
+                                            <th class="text-center">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sp in ds_can_nhap %}
+                                        <tr>
+                                            <td class="fw-bold text-primary">{{ sp.ma_hang }}</td>
+                                            <td class="fw-semibold">{{ sp.ten_hang }}</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill">
+                                                    {{ sp.so_luong_ton }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center text-muted">{{ sp.ton_toi_thieu }}</td>
+                                            <td class="text-end fw-semibold">{{ sp.gia_nhap|floatformat:0 }} đ</td>
+                                            <td class="text-center">
+                                                <a href="{% url 'san_pham_list' %}?q={{ sp.ma_hang }}" class="btn btn-sm btn-outline-primary" title="Nhập thêm hàng">
+                                                    <i class="bi bi-cart-plus"></i> Nhập
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="bi bi-check-circle text-success me-1"></i> Kho hàng hiện không có sản phẩm nào chạm ngưỡng tồn tối thiểu.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart: Inventory Overview -->
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                            <h5 class="fw-bold text-dark mb-3">
+                                <i class="bi bi-bar-chart-line text-primary me-2"></i>Biểu Đồ So Sánh Tồn Kho
+                            </h5>
+                            <div class="d-flex align-items-center justify-content-center h-100">
+                                <canvas id="inventoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script Chart.js Dynamic Integration -->
+    <script>
+        const ctx = document.getElementById('inventoryChart').getContext('2d');
+        
+        const chartLabels = {% if chart_labels %}{{ chart_labels|safe }}{% else %}['ESP32', 'Xi măng', 'Nồi cơm', 'Acetone', 'Vở ghi']{% endif %};
+        const chartData = {% if chart_data %}{{ chart_data|safe }}{% else %}[8, 7, 1, 4, 2]{% endif %};
+        const minStockData = {% if min_stock_data %}{{ min_stock_data|safe }}{% else %}[10, 20, 5, 10, 3]{% endif %};
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: 'Số lượng tồn hiện tại',
+                        data: chartData,
+                        backgroundColor: '#4e73df',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Tồn tối thiểu cần thiết',
+                        data: minStockData,
+                        backgroundColor: '#eaecf4',
+                        borderColor: '#d1d3e2',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

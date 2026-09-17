@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản Lý Nhóm Hàng - Warehouse AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col justify-between">
+        <div>
+            <div class="p-6 flex items-center space-x-3 border-b border-gray-100">
+                <div class="bg-blue-600 p-2 rounded-lg text-white"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <div>
+                    <h1 class="font-bold text-gray-800 text-sm">Warehouse AI</h1>
+                    <p class="text-xs text-gray-400">Smart Inventory Core</p>
+                </div>
+            </div>
+            <nav class="p-4 space-y-1 text-sm font-medium">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-3">Tổng quan</p>
+                <a href="{% url 'dashboard' %}" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100"><i class="fa-solid fa-chart-pie w-5"></i><span>Bảng Điều Khiển</span></a>
+                
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 px-3">Nghiệp vụ kho</p>
+                <a href="{% url 'phieu_nhap_list' %}" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100"><i class="fa-solid fa-file-import w-5"></i><span>Nhập Kho</span></a>
+                <a href="{% url 'phieu_xuat_list' %}" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100"><i class="fa-solid fa-file-export w-5"></i><span>Xuất Kho</span></a>
+                <a href="{% url 'thong_ke_nxt' %}" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100"><i class="fa-solid fa-chart-line w-5"></i><span>Báo Cáo Nhập Xuất Tồn</span></a>
+
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 px-3">Quản lý danh mục</p>
+                <a href="{% url 'san_pham_list' %}" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100"><i class="fa-solid fa-box w-5"></i><span>Hàng Hóa & Tồn Kho</span></a>
+                <a href="{% url 'nhom_hang_list' %}" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-blue-600 text-white"><i class="fa-solid fa-tags w-5"></i><span>Nhóm Hàng</span></a>
+                
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-6 mb-2 px-3">Trí tuệ nhân tạo (AI)</p>
+                <a href="{% url 'ai_assistant' %}" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100"><i class="fa-solid fa-robot w-5"></i><span>Dự Báo & Trợ Lý AI</span></a>
+            </nav>
+
+        </div>
+        <div class="p-4 border-t border-gray-100 text-xs text-gray-400">Hệ thống Quản lý Kho v2.0</div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 flex flex-col overflow-y-auto">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8">
+            <div class="text-gray-500 text-sm font-medium"><i class="fa-regular fa-folder mr-2"></i> Quản lý danh mục nhóm hàng</div>
+            <div class="flex items-center space-x-4">
+                <div class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase">{{ role }}</div>
+                <span class="font-semibold text-gray-700 text-sm">{{ username }}</span>
+                <a href="{% url 'logout' %}" class="text-red-500 hover:text-red-700 text-sm"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </div>
+        </header>
+
+        <main class="p-8">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-700{% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Danh Sách Nhóm Hàng</h2>
+                    <p class="text-sm text-gray-500 mt-1">Phân loại và tổ chức các mặt hàng trong kho.</p>
+                </div>
+                {% if role == 'THUKHO' or role == 'ADMIN' %}
+                <a href="{% url 'nhom_hang_add' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i><span>Thêm nhóm hàng</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                            <th class="py-4 px-6 font-semibold">Tên nhóm hàng</th>
+                            <th class="py-4 px-6 font-semibold">Mô tả</th>
+                            <th class="py-4 px-6 font-semibold text-center">Số sản phẩm</th>
+                            {% if role == 'THUKHO' or role == 'ADMIN' %}
+                            <th class="py-4 px-6 font-semibold text-right">Thao tác</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                        {% for nhom in danh_sach %}
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="py-4 px-6 font-semibold text-gray-900">
+                                <i class="fa-solid fa-tag text-blue-500 mr-2"></i>{{ nhom.ten_nhom }}
+                            </td>
+                            <td class="py-4 px-6 text-gray-500">{{ nhom.mo_ta|default:"Không có mô tả" }}</td>
+                            <td class="py-4 px-6 text-center">
+                                <span class="px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">
+                                    {{ nhom.hanghoa_set.count }} sản phẩm
+                                </span>
+                            </td>
+                            {% if role == 'THUKHO' or role == 'ADMIN' %}
+                            <td class="py-4 px-6 text-right space-x-2">
+                                <a href="{% url 'nhom_hang_edit' nhom.id %}" class="text-blue-600 hover:text-blue-800 font-medium text-xs px-2.5 py-1 rounded border border-blue-200 hover:bg-blue-50 transition">
+                                    <i class="fa-solid fa-pen-to-square mr-1"></i>Sửa
+                                </a>
+                                <a href="{% url 'nhom_hang_delete' nhom.id %}" onclick="return confirm('Bạn có chắc chắn muốn xóa nhóm hàng [{{ nhom.ten_nhom }}] không?');" class="text-red-600 hover:text-red-800 font-medium text-xs px-2.5 py-1 rounded border border-red-200 hover:bg-red-50 transition">
+                                    <i class="fa-solid fa-trash mr-1"></i>Xóa
+                                </a>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-8 text-gray-400">Chưa có nhóm hàng nào. Bấm "+ Thêm nhóm hàng" để tạo mới.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

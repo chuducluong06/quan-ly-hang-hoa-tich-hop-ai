@@ -1,0 +1,66 @@
+{% extends 'warehouse/base.html' %}
+
+{% block title %}Thông tin Nhà cung cấp - Warehouse AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-primary"><i class="fas fa-edit me-2"></i> Thêm / Cập nhật Nhà cung cấp</h5>
+            <a href="{% url 'nha_cung_cap_list' %}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Quay lại
+            </a>
+        </div>
+        <div class="card-body">
+            <!-- Form thêm/sửa kết nối chuẩn Django -->
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="maNCC" class="form-label">Mã nhà cung cấp <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="maNCC" name="ma_ncc" value="{{ ncc.ma_ncc|default:'' }}" required placeholder="Nhập mã nhà cung cấp...">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="tenNCC" class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="tenNCC" name="ten_ncc" value="{{ ncc.ten_ncc|default:'' }}" required placeholder="Nhập tên nhà cung cấp...">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="nguoiLienHe" class="form-label">Người liên hệ</label>
+                        <input type="text" class="form-control" id="nguoiLienHe" name="nguoi_lien_he" value="{{ ncc.nguoi_lien_he|default:'' }}" placeholder="Nhập tên người liên hệ...">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="soDienThoai" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" id="soDienThoai" name="so_dien_thoai" value="{{ ncc.so_dien_thoai|default:'' }}" required placeholder="Nhập số điện thoại...">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ ncc.email|default:'' }}" placeholder="Nhập địa chỉ email...">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="diaChi" class="form-label">Địa chỉ</label>
+                        <input type="text" class="form-control" id="diaChi" name="dia_chi" value="{{ ncc.dia_chi|default:'' }}" placeholder="Nhập địa chỉ...">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="ghiChu" class="form-label">Ghi chú</label>
+                    <textarea class="form-control" id="ghiChu" name="ghi_chu" rows="3" placeholder="Nhập ghi chú thêm...">{{ ncc.ghi_chu|default:'' }}</textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'nha_cung_cap_list' %}" class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Lưu thông tin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dự Báo & Trợ Lý AI - Warehouse AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .sidebar { background-color: #ffffff; min-height: 100vh; border-right: 1px solid #dee2e6; }
+        .nav-link { color: #495057; font-weight: 500; padding: 10px 15px; border-radius: 8px; margin-bottom: 5px; }
+        .nav-link:hover, .nav-link.active { background-color: #4f46e5; color: #ffffff; }
+        .card-ai { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .ai-badge { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- SIDEBAR -->
+        <div class="col-md-2 sidebar p-3">
+            <div class="d-flex align-items-center mb-4">
+                <i class="fa-solid fa-boxes-stacked fa-2x text-primary me-2"></i>
+                <div>
+                    <h6 class="mb-0 fw-bold">Warehouse AI</h6>
+                    <small class="text-muted">Smart Inventory</small>
+                </div>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="{% url 'dashboard' %}" class="nav-link"><i class="fa-solid fa-chart-pie me-2"></i> Bảng Điều Khiển</a></li>
+                <li class="nav-item"><a href="{% url 'phieu_nhap_list' %}" class="nav-link"><i class="fa-solid fa-file-arrow-down me-2"></i> Nhập Kho</a></li>
+                <li class="nav-item"><a href="{% url 'phieu_xuat_list' %}" class="nav-link"><i class="fa-solid fa-file-arrow-up me-2"></i> Xuất Kho</a></li>
+                <li class="nav-item"><a href="{% url 'thong_ke_nxt' %}" class="nav-link"><i class="fa-solid fa-chart-bar me-2"></i> Báo Cáo NXT</a></li>
+                <li class="nav-item"><a href="{% url 'san_pham_list' %}" class="nav-link"><i class="fa-solid fa-box me-2"></i> Hàng Hóa & Tồn</a></li>
+                <li class="nav-item"><a href="{% url 'nhom_hang_list' %}" class="nav-link"><i class="fa-solid fa-layer-group me-2"></i> Nhóm Hàng</a></li>
+                <li class="nav-item"><a href="{% url 'ai_assistant' %}" class="nav-link active"><i class="fa-solid fa-robot me-2"></i> Dự Báo & Trợ Lý AI</a></li>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="col-md-10 p-4">
+            <!-- Header Bar -->
+            <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-3 shadow-sm mb-4">
+                <h4 class="fw-bold text-dark mb-0"><i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i> Trợ Lý Thông Minh & Dự Báo AI</h4>
+                <div class="d-flex align-items-center">
+                    <span class="fw-bold text-secondary me-3"><i class="fa-solid fa-user-shield me-1"></i> {{ username }} ({{ role }})</span>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất</a>
+                </div>
+            </div>
+
+            <!-- AI Overview Banner -->
+            <div class="card card-ai ai-badge p-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-9">
+                        <h3><i class="fa-solid fa-microchip me-2"></i> Trung Tâm Phân Tích & Dự Báo Tự Động</h3>
+                        <p class="mb-0 opacity-90">Hệ thống AI đã quét toàn bộ dữ liệu kho hàng. Dưới đây là các báo cáo tự động, cảnh báo biến động và kế hoạch nhập hàng tối ưu dành cho bạn.</p>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <span class="badge bg-light text-dark p-2 fs-6"><i class="fa-solid fa-circle-check text-success me-1"></i> AI Engine: Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Cột trái: AI Sinh báo cáo & Tóm tắt biến động -->
+                <div class="col-md-6 mb-4">
+                    <div class="card card-ai h-100 p-4">
+                        <h5 class="fw-bold text-primary mb-3"><i class="fa-solid fa-file-lines me-2"></i> AI Tóm Tắt & Sinh Báo Cáo Nhập Xuất Tồn</h5>
+                        <div class="p-3 bg-light rounded-3 mb-3">
+                            <p class="small text-muted mb-2"><i class="fa-solid fa-clock me-1"></i> Đã phân tích lúc: Vừa xong</p>
+                            <hr class="my-2">
+                            {% for insight in ai_insights %}
+                                <div class="d-flex align-items-start mb-2">
+                                    <i class="fa-solid fa-circle-dot text-primary mt-1 me-2" style="font-size: 8px;"></i>
+                                    <span class="text-dark">{{ insight }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-auto">
+                            <a href="{% url 'thong_ke_nxt' %}" class="btn btn-outline-primary btn-sm w-100"><i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Xem Chi Tiết Báo Cáo NXT</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cột phải: Thống kê nhanh trạng thái -->
+                <div class="col-md-6 mb-4">
+                    <div class="card card-ai h-100 p-4">
+                        <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-chart-pie me-2"></i> Chỉ Số Sức Khỏe Kho Hàng</h5>
+                        <div class="row g-3 text-center">
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded-3">
+                                    <small class="text-muted d-block">Tổng sản phẩm</small>
+                                    <h4 class="fw-bold text-primary mb-0">{{ tong_san_pham }}</h4>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded-3">
+                                    <small class="text-muted d-block">Cần nhập gấp</small>
+                                    <h4 class="fw-bold text-danger mb-0">{{ so_luong_can_canh_bao }}</h4>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-3 bg-light rounded-3">
+                                    <small class="text-muted d-block">Tổng giá trị</small>
+                                    <h6 class="fw-bold text-success mb-0 mt-1">{{ tong_gia_tri|floatformat:0 }} đ</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0 small" role="alert">
+                            <i class="fa-solid fa-info-circle me-1"></i> Mô hình dự báo AI dựa trên ngưỡng tồn tối thiểu để tự động cân đối dòng hàng.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng AI Gợi Ý Kế Hoạch Nhập Hàng -->
+            <div class="card card-ai p-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-lightbulb text-warning me-2"></i> AI Gợi Ý Kế Hoạch Nhập Hàng Tối Ưu</h5>
+                {% if goi_y_nhap %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã hàng</th>
+                                    <th>Tên hàng hóa</th>
+                                    <th>Tồn hiện tại</th>
+                                    <th>Tồn tối thiểu</th>
+                                    <th class="text-success fw-bold">Gợi ý số lượng nhập</th>
+                                    <th class="text-end">Chi phí dự kiến</th>
+                                    <th class="text-center">Thao tác nhanh</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in goi_y_nhap %}
+                                <tr>
+                                    <td><span class="badge bg-secondary">{{ item.hang.ma_hang }}</span></td>
+                                    <td class="fw-bold">{{ item.hang.ten_hang }}</td>
+                                    <td><span class="text-danger fw-bold">{{ item.hang.so_luong_ton }}</span></td>
+                                    <td>{{ item.hang.ton_toi_thieu }}</td>
+                                    <td><span class="badge bg-success fs-6">+{{ item.so_luong_goi_y }}</span></td>
+                                    <td class="text-end fw-bold text-primary">{{ item.chi_phi|floatformat:0 }} đ</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'phieu_nhap_create' %}" class="btn btn-sm btn-primary"><i class="fa-solid fa-plus me-1"></i> Lập Phiếu Nhập</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fa-solid fa-face-smile fa-3x text-success mb-2"></i>
+                        <p class="text-muted mb-0">Tuyệt vời! Hiện tại không có mặt hàng nào chạm ngưỡng thiếu hụt. Kế hoạch tồn kho đang hoạt động hoàn hảo.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
