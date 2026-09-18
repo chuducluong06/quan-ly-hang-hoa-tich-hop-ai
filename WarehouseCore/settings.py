@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 
+# --- CẤU HÌNH ĐỌC FILE .ENV ---
+import os
+from dotenv import load_dotenv
+load_dotenv()
+# ------------------------------
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -123,3 +129,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# --- CẤU HÌNH API KEY GEMINI ---
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+# --------------------------------

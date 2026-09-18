@@ -3601,3 +3601,4 @@ def don_vi_tinh_delete_view(
     return redirect(
         'don_vi_tinh_list'
     )
+
