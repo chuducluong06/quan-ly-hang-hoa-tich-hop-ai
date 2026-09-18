@@ -1,0 +1,10 @@
+# Môi trường ảo
+venv/
+env/
+
+# Database SQLite cục bộ
+db.sqlite3
+
+# Các file cache của Python
+__pycache__/
+*.pyc

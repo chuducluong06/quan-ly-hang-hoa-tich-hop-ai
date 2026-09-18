@@ -1,94 +1,671 @@
 {% extends 'warehouse/base.html' %}
-{% block title %}Quản Lý Đơn Vị Tính - Warehouse AI{% endblock %}
+
+{% block title %}
+    Quản Lý Đơn Vị Tính - Hệ Thống Kho AI
+{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-0">
-    <!-- Tiêu đề trang -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+<style>
+    /* =====================================================
+       TRANG QUẢN LÝ ĐƠN VỊ TÍNH
+    ====================================================== */
+
+    .dvt-page {
+        width: 100%;
+    }
+
+    /* ===== TIÊU ĐỀ ===== */
+
+    .dvt-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .dvt-title {
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .dvt-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-top: 0.35rem;
+        margin-bottom: 0;
+    }
+
+    /* ===== CARD ===== */
+
+    .dvt-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .dvt-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.1rem 1.25rem;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .dvt-card-title {
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .dvt-card-title i {
+        color: var(--accent-primary);
+    }
+
+    .dvt-card-description {
+        color: var(--text-secondary);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    .dvt-card-body {
+        padding: 1.25rem;
+    }
+
+    /* ===== BUTTON THÊM ===== */
+
+    .dvt-add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.55rem 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    /* ===== TÌM KIẾM ===== */
+
+    .dvt-search-area {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .dvt-search-input {
+        height: 42px;
+        max-width: 430px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
+
+    .dvt-search-input::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.8;
+    }
+
+    .dvt-search-input:focus {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .dvt-search-btn {
+        height: 42px;
+        padding: 0 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
+
+    .dvt-clear-btn {
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 0.9rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
+
+    /* ===== TABLE ===== */
+
+    .dvt-table-wrapper {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .dvt-table {
+        margin: 0;
+        width: 100%;
+    }
+
+    .dvt-table thead th {
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.85rem 1rem;
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .dvt-table tbody td {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+        padding: 0.85rem 1rem;
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+
+    .dvt-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .dvt-table tbody tr:hover td {
+        background: rgba(99, 102, 241, 0.04);
+    }
+
+    /* ===== STT ===== */
+
+    .dvt-number {
+        color: var(--text-secondary);
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+
+    /* ===== TÊN ĐƠN VỊ ===== */
+
+    .dvt-name {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    /* ===== MÔ TẢ ===== */
+
+    .dvt-description {
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+
+    .dvt-no-description {
+        color: var(--text-secondary);
+        opacity: 0.65;
+        font-style: italic;
+    }
+
+    /* ===== NÚT THAO TÁC ===== */
+
+    .dvt-action-btn {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+    }
+
+    .dvt-action-btn + .dvt-action-form {
+        margin-left: 0.25rem;
+    }
+
+    .dvt-action-form {
+        display: inline-block;
+        margin: 0;
+    }
+
+    /* ===== EMPTY ===== */
+
+    .dvt-empty {
+        padding: 3.5rem 1rem !important;
+        text-align: center;
+    }
+
+    .dvt-empty-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(99, 102, 241, 0.08);
+        color: var(--accent-primary);
+        font-size: 1.6rem;
+    }
+
+    .dvt-empty-title {
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+    }
+
+    .dvt-empty-text {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    /* ===== FOOTER ===== */
+
+    .dvt-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .dvt-total {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+    }
+
+    .dvt-total strong {
+        color: var(--text-primary);
+    }
+
+    /* ===== RESPONSIVE ===== */
+
+    @media (max-width: 768px) {
+
+        .dvt-page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .dvt-add-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .dvt-card-header {
+            align-items: flex-start;
+        }
+
+        .dvt-search-area {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .dvt-search-input {
+            max-width: none;
+            width: 100%;
+        }
+
+        .dvt-search-btn,
+        .dvt-clear-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .dvt-table {
+            min-width: 650px;
+        }
+    }
+</style>
+
+
+<div class="dvt-page">
+
+    <!-- =====================================================
+         TIÊU ĐỀ TRANG
+    ====================================================== -->
+
+    <div class="dvt-page-header">
+
         <div>
-            <h4 class="fw-bold mb-1" style="color: var(--text-primary);">
-                <i class="bi bi-rulers me-2" style="color: var(--accent-primary);"></i>Quản Lý Đơn Vị Tính
-            </h4>
-            <p class="mb-0 small" style="color: var(--text-secondary);">Quản lý danh sách các đơn vị tính của hàng hóa trong kho.</p>
+
+            <h1 class="dvt-title">
+
+                <i class="bi bi-rulers me-2"
+                   style="color: var(--accent-primary);"></i>
+
+                Quản Lý Đơn Vị Tính
+
+            </h1>
+
+            <p class="dvt-subtitle">
+                Quản lý các đơn vị tính được sử dụng cho hàng hóa trong kho.
+            </p>
+
         </div>
+
+
+        <!-- NÚT THÊM -->
+
+        <a href="{% url 'don_vi_tinh_add' %}"
+           class="btn btn-primary dvt-add-btn">
+
+            <i class="bi bi-plus-lg"></i>
+
+            Thêm đơn vị tính
+
+        </a>
+
     </div>
 
-    <!-- Content Body -->
-    <div class="card shadow-sm border-0" style="background: var(--bg-card); border-color: var(--border-color) !important;">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center" style="background: var(--bg-secondary) !important; border-color: var(--border-color) !important;">
-            <h5 class="mb-0" style="color: var(--accent-primary);">
-                <i class="bi bi-list-columns me-2"></i> Danh sách đơn vị tính
-            </h5>
-            <a href="{% url 'don_vi_tinh_add' %}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i> Thêm đơn vị tính
-            </a>
-        </div>
-        <div class="card-body">
-            <!-- Search & Filter Form -->
-            <form method="GET" class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" name="keyword" value="{{ request.GET.keyword }}" placeholder="Tìm kiếm tên đơn vị tính hoặc mô tả...">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-secondary w-100">
-                        <i class="bi bi-search me-1"></i> Tìm kiếm
-                    </button>
-                </div>
-            </form>
 
-            <!-- Table Data -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead style="background: var(--bg-secondary);">
-                        <tr>
-                            <th style="background: var(--bg-secondary); color: var(--text-secondary); width: 10%;">STT</th>
-                            <th style="background: var(--bg-secondary); color: var(--text-secondary); width: 30%;">Tên đơn vị tính</th>
-                            <th style="background: var(--bg-secondary); color: var(--text-secondary); width: 45%;">Mô tả / Ghi chú</th>
-                            <th class="text-center" style="background: var(--bg-secondary); color: var(--text-secondary); width: 15%;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dvt in danh_sach %}
-                        <tr>
-                            <td><strong style="color: var(--text-primary);">#{{ forloop.counter }}</strong></td>
-                            <td style="color: var(--text-primary); font-weight: 600;">{{ dvt.ten_don_vi }}</td>
-                            <td style="color: var(--text-secondary);">{{ dvt.mo_ta|default:"Không có mô tả" }}</td>
-                            <td class="text-center">
-                                <a href="{% url 'don_vi_tinh_edit' dvt.pk %}" class="btn btn-sm btn-outline-warning" title="Sửa">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                <form action="{% url 'don_vi_tinh_delete' dvt.pk %}" method="POST" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa đơn vị tính này?');">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4" style="color: var(--text-secondary);">
-                                Chưa có đơn vị tính nào trong hệ thống.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- =====================================================
+         CARD DANH SÁCH
+    ====================================================== -->
+
+    <div class="dvt-card">
+
+        <!-- HEADER -->
+
+        <div class="dvt-card-header">
+
+            <div>
+
+                <h2 class="dvt-card-title">
+
+                    <i class="bi bi-list-ul me-2"></i>
+
+                    Danh sách đơn vị tính
+
+                </h2>
+
+                <div class="dvt-card-description">
+
+                    Theo dõi và quản lý các đơn vị tính trong hệ thống.
+
+                </div>
+
             </div>
 
-            <!-- Pagination (Nếu có phân trang) -->
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-end mb-0">
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1">Trước</a>
-                    </li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item">
-                        <a class="page-link" href="#">Sau</a>
-                    </li>
-                </ul>
-            </nav>
         </div>
+
+
+        <!-- BODY -->
+
+        <div class="dvt-card-body">
+
+
+            <!-- =================================================
+                 TÌM KIẾM
+            ================================================== -->
+
+            <form method="GET"
+                  class="dvt-search-area">
+
+                <input
+                    type="text"
+                    name="keyword"
+                    class="form-control dvt-search-input"
+                    value="{{ request.GET.keyword|default:'' }}"
+                    placeholder="Tìm kiếm tên đơn vị tính hoặc mô tả..."
+                    autocomplete="off"
+                >
+
+
+                <button
+                    type="submit"
+                    class="btn btn-secondary dvt-search-btn">
+
+                    <i class="bi bi-search me-1"></i>
+
+                    Tìm kiếm
+
+                </button>
+
+
+                {% if request.GET.keyword %}
+
+                    <a
+                        href="{% url 'don_vi_tinh_list' %}"
+                        class="btn btn-outline-secondary dvt-clear-btn">
+
+                        <i class="bi bi-x-lg me-1"></i>
+
+                        Xóa tìm kiếm
+
+                    </a>
+
+                {% endif %}
+
+            </form>
+
+
+            <!-- =================================================
+                 BẢNG
+            ================================================== -->
+
+            <div class="table-responsive dvt-table-wrapper">
+
+                <table class="table table-hover align-middle dvt-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th style="width: 8%;">
+                                STT
+                            </th>
+
+                            <th style="width: 30%;">
+                                Tên đơn vị tính
+                            </th>
+
+                            <th style="width: 42%;">
+                                Mô tả
+                            </th>
+
+                            <th
+                                class="text-center"
+                                style="width: 20%;">
+
+                                Thao tác
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for dvt in danh_sach %}
+
+                            <tr>
+
+                                <!-- STT -->
+
+                                <td>
+
+                                    <span class="dvt-number">
+                                        #{{ forloop.counter }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- TÊN ĐƠN VỊ TÍNH -->
+
+                                <td>
+
+                                    <span class="dvt-name">
+                                        {{ dvt.ten_dvt }}
+                                    </span>
+
+                                </td>
+
+
+                                <!-- MÔ TẢ -->
+
+                                <td>
+
+                                    {% if dvt.mo_ta %}
+
+                                        <span class="dvt-description">
+                                            {{ dvt.mo_ta }}
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="dvt-no-description">
+                                            Không có mô tả
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- THAO TÁC -->
+
+                                <td class="text-center">
+
+                                    <!-- SỬA -->
+
+                                    <a
+                                        href="{% url 'don_vi_tinh_edit' dvt.pk %}"
+                                        class="btn btn-outline-warning dvt-action-btn"
+                                        title="Sửa đơn vị tính"
+                                        aria-label="Sửa đơn vị tính">
+
+                                        <i class="bi bi-pencil-square"></i>
+
+                                    </a>
+
+
+                                    <!-- XÓA -->
+
+                                    <form
+                                        action="{% url 'don_vi_tinh_delete' dvt.pk %}"
+                                        method="POST"
+                                        class="dvt-action-form">
+
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-outline-danger dvt-action-btn"
+                                            title="Xóa đơn vị tính"
+                                            aria-label="Xóa đơn vị tính"
+                                            onclick="return confirm('Bạn có chắc chắn muốn xóa đơn vị tính này không?');">
+
+                                            <i class="bi bi-trash3"></i>
+
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                            </tr>
+
+
+                        {% empty %}
+
+                            <!-- =================================================
+                                 KHÔNG CÓ DỮ LIỆU
+                            ================================================== -->
+
+                            <tr>
+
+                                <td
+                                    colspan="4"
+                                    class="dvt-empty">
+
+                                    <div class="dvt-empty-icon">
+
+                                        <i class="bi bi-rulers"></i>
+
+                                    </div>
+
+
+                                    <div class="dvt-empty-title">
+
+                                        {% if request.GET.keyword %}
+
+                                            Không tìm thấy đơn vị tính
+
+                                        {% else %}
+
+                                            Chưa có đơn vị tính
+
+                                        {% endif %}
+
+                                    </div>
+
+
+                                    <div class="dvt-empty-text">
+
+                                        {% if request.GET.keyword %}
+
+                                            Không có đơn vị tính phù hợp với
+                                            từ khóa
+                                            "<strong>{{ request.GET.keyword }}</strong>".
+
+                                        {% else %}
+
+                                            Hãy thêm đơn vị tính đầu tiên
+                                            vào hệ thống.
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- =================================================
+                 FOOTER
+            ================================================== -->
+
+            {% if danh_sach %}
+
+                <div class="dvt-footer">
+
+                    <div class="dvt-total">
+
+                        Tổng số:
+
+                        <strong>
+                            {{ danh_sach|length }}
+                        </strong>
+
+                        đơn vị tính
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
     </div>
+
 </div>
+
 {% endblock %}

@@ -1,91 +1,566 @@
 {% extends 'warehouse/base.html' %}
 
-{% block title %}Đơn Vị Tính - Hệ Thống Kho AI{% endblock %}
+{% block title %}
+    {% if is_edit %}
+        Sửa Đơn Vị Tính - Hệ Thống Kho AI
+    {% else %}
+        Thêm Đơn Vị Tính - Hệ Thống Kho AI
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto space-y-6">
-    <!-- Tiêu đề -->
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Thêm / Sửa Đơn Vị Tính</h1>
-            <p class="text-sm text-gray-500 mt-1">Điền thông tin chi tiết cho đơn vị tính sản phẩm trong kho.</p>
-        </div>
-        <a href="{% url 'don_vi_tinh_list' %}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-            Quay lại
-        </a>
-    </div>
-
-    <!-- Form -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <form method="post" class="space-y-4">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-                <div class="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg">
-                    {{ form.non_field_errors }}
-                </div>
-            {% endif %}
-
-            <!-- Hiển thị các trường của form -->
-            <div class="space-y-4 warehouse-form-fields">
-                {{ form.as_p }}
-            </div>
-
-            <!-- Nút bấm thao tác -->
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                <a href="{% url 'don_vi_tinh_list' %}" class="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                    Hủy
-                </a>
-                <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors cursor-pointer">
-                    Lưu thông tin
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <style>
-    /* Định dạng chuẩn cho form.as_p để giao diện đẹp mắt và ăn khớp với Tailwind */
-    .warehouse-form-fields p {
-        margin-bottom: 1rem;
+    /* =====================================================
+       TRANG ĐƠN VỊ TÍNH
+    ===================================================== */
+
+    .dvt-page {
+        max-width: 900px;
+        margin: 0 auto;
     }
-    .warehouse-form-fields label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #374151;
-        margin-bottom: 0.25rem;
+
+    /* Header */
+    .dvt-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 24px;
     }
-    .warehouse-form-fields input, 
-    .warehouse-form-fields select, 
-    .warehouse-form-fields textarea {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
-        color: #374151;
-        outline: none;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+    .dvt-header-left h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
     }
-    .warehouse-form-fields input:focus, 
-    .warehouse-form-fields select:focus, 
-    .warehouse-form-fields textarea:focus {
-        border-color: #2563eb;
-        ring: 2px solid #2563eb;
-    }
-    .warehouse-form-fields .helptext {
-        font-size: 0.75rem;
+
+    .dvt-header-left p {
+        margin: 6px 0 0;
         color: #6b7280;
-        margin-top: 0.25rem;
-        display: block;
+        font-size: 14px;
     }
-    .warehouse-form-fields .errorlist {
+
+    .dvt-back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #ffffff;
+        color: #374151;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+    .dvt-back-btn:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+    /* Thông báo */
+    .dvt-message {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .dvt-message.success {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #047857;
+    }
+
+    .dvt-message.error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+    }
+
+    .dvt-message.warning {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #b45309;
+    }
+
+    .dvt-message.info {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+    }
+
+    /* Card */
+    .dvt-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .dvt-card-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #e5e7eb;
+        background: #fafbff;
+    }
+
+    .dvt-card-header h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 650;
+        color: #374151;
+    }
+
+    .dvt-card-header p {
+        margin: 5px 0 0;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .dvt-card-body {
+        padding: 28px 24px;
+    }
+
+    /* Form group */
+    .dvt-form-group {
+        margin-bottom: 22px;
+    }
+
+    .dvt-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .dvt-required {
         color: #dc2626;
-        font-size: 0.75rem;
-        list-style: none;
-        padding: 0;
-        margin-top: 0.25rem;
+        margin-left: 2px;
+    }
+
+    .dvt-input,
+    .dvt-textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        background: #ffffff;
+        color: #1f2937;
+        font-size: 14px;
+        outline: none;
+        transition: 0.2s;
+    }
+
+    .dvt-input {
+        height: 44px;
+        padding: 0 13px;
+    }
+
+    .dvt-textarea {
+        min-height: 110px;
+        padding: 12px 13px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .dvt-input:focus,
+    .dvt-textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .dvt-input.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10);
+    }
+
+    .dvt-help {
+        margin-top: 7px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    /* Thông tin sửa */
+    .dvt-edit-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px 16px;
+        margin-bottom: 24px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 9px;
+        color: #1d4ed8;
+        font-size: 14px;
+    }
+
+    .dvt-edit-info strong {
+        color: #1e40af;
+    }
+
+    /* Footer */
+    .dvt-form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 22px;
+        margin-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .dvt-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-width: 110px;
+        height: 42px;
+        padding: 0 18px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: 0.2s;
+        box-sizing: border-box;
+    }
+
+    .dvt-btn-cancel {
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        color: #374151;
+    }
+
+    .dvt-btn-cancel:hover {
+        background: #f9fafb;
+    }
+
+    .dvt-btn-save {
+        background: #6366f1;
+        border: 1px solid #6366f1;
+        color: #ffffff;
+    }
+
+    .dvt-btn-save:hover {
+        background: #4f46e5;
+        border-color: #4f46e5;
+    }
+
+    .dvt-btn-save:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+
+        .dvt-page {
+            width: 100%;
+        }
+
+        .dvt-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .dvt-header-left h1 {
+            font-size: 24px;
+        }
+
+        .dvt-card-body {
+            padding: 20px 16px;
+        }
+
+        .dvt-form-footer {
+            flex-direction: column-reverse;
+        }
+
+        .dvt-btn {
+            width: 100%;
+        }
     }
 </style>
+
+
+<div class="dvt-page">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="dvt-header">
+
+        <div class="dvt-header-left">
+
+            <h1>
+                {% if is_edit %}
+                    Sửa Đơn Vị Tính
+                {% else %}
+                    Thêm Đơn Vị Tính
+                {% endif %}
+            </h1>
+
+            <p>
+                {% if is_edit %}
+                    Cập nhật thông tin đơn vị tính trong kho.
+                {% else %}
+                    Nhập thông tin đơn vị tính cho sản phẩm trong kho.
+                {% endif %}
+            </p>
+
+        </div>
+
+        <a href="{% url 'don_vi_tinh_list' %}"
+           class="dvt-back-btn">
+
+            <i class="fa-solid fa-arrow-left"></i>
+            Quay lại
+
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         THÔNG BÁO
+    ====================================================== -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="dvt-message
+                {% if message.tags == 'success' %}
+                    success
+                {% elif message.tags == 'error' %}
+                    error
+                {% elif message.tags == 'warning' %}
+                    warning
+                {% else %}
+                    info
+                {% endif %}">
+
+                {% if message.tags == 'success' %}
+                    <i class="fa-solid fa-circle-check"></i>
+                {% elif message.tags == 'error' %}
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                {% else %}
+                    <i class="fa-solid fa-circle-info"></i>
+                {% endif %}
+
+                <span>{{ message }}</span>
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         FORM
+    ====================================================== -->
+
+    <div class="dvt-card">
+
+        <div class="dvt-card-header">
+
+            <h2>
+                <i class="fa-solid fa-ruler-combined"
+                   style="margin-right: 8px; color: #6366f1;">
+                </i>
+
+                Thông tin đơn vị tính
+            </h2>
+
+            <p>
+                Vui lòng nhập đầy đủ thông tin bên dưới.
+            </p>
+
+        </div>
+
+
+        <div class="dvt-card-body">
+
+            <form method="POST" id="donViTinhForm">
+
+                {% csrf_token %}
+
+
+                <!-- TÊN ĐƠN VỊ -->
+
+                <div class="dvt-form-group">
+
+                    <label for="ten_dvt" class="dvt-label">
+
+                        Tên đơn vị tính
+
+                        <span class="dvt-required">*</span>
+
+                    </label>
+
+                    <input
+                        type="text"
+                        id="ten_dvt"
+                        name="ten_dvt"
+                        value="{{ form_data.ten_dvt|default:'' }}"
+                        maxlength="100"
+                        required
+                        autocomplete="off"
+                        placeholder="Ví dụ: Cái, Chiếc, Kg, Thùng..."
+                        class="dvt-input"
+                    >
+
+                    <div class="dvt-help">
+                        Tên đơn vị tính không được để trống và không được trùng.
+                    </div>
+
+                </div>
+
+
+                <!-- MÔ TẢ -->
+
+                <div class="dvt-form-group">
+
+                    <label for="mo_ta" class="dvt-label">
+                        Mô tả
+                    </label>
+
+                    <textarea
+                        id="mo_ta"
+                        name="mo_ta"
+                        rows="4"
+                        placeholder="Nhập mô tả cho đơn vị tính..."
+                        class="dvt-textarea"
+                    >{{ form_data.mo_ta|default:'' }}</textarea>
+
+                    <div class="dvt-help">
+                        Có thể nhập thông tin mô tả hoặc ghi chú cho đơn vị tính.
+                    </div>
+
+                </div>
+
+
+                <!-- THÔNG TIN KHI SỬA -->
+
+                {% if is_edit %}
+
+                    <div class="dvt-edit-info">
+
+                        <i class="fa-solid fa-circle-info"
+                           style="margin-top: 2px;">
+                        </i>
+
+                        <div>
+
+                            <strong>Đang chỉnh sửa đơn vị tính</strong>
+
+                            <div style="margin-top: 4px;">
+                                Bạn đang cập nhật thông tin của:
+                                <strong>{{ don_vi_tinh.ten_dvt }}</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- NÚT -->
+
+                <div class="dvt-form-footer">
+
+                    <a href="{% url 'don_vi_tinh_list' %}"
+                       class="dvt-btn dvt-btn-cancel">
+
+                        <i class="fa-solid fa-xmark"></i>
+                        Hủy
+
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        id="btnSubmit"
+                        class="dvt-btn dvt-btn-save">
+
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        {% if is_edit %}
+                            Cập nhật
+                        {% else %}
+                            Lưu thông tin
+                        {% endif %}
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("donViTinhForm");
+    const tenDvt = document.getElementById("ten_dvt");
+
+    if (!form || !tenDvt) {
+        return;
+    }
+
+    form.addEventListener("submit", function (event) {
+
+        if (!tenDvt.value.trim()) {
+
+            event.preventDefault();
+
+            tenDvt.classList.add("error");
+
+            tenDvt.focus();
+
+            return;
+        }
+
+        tenDvt.classList.remove("error");
+
+        /*
+         * Không khóa nút submit.
+         * Tránh trường hợp trình duyệt giữ lại trạng thái
+         * "Đang lưu..." khi quay lại trang.
+         */
+
+    });
+
+
+    tenDvt.addEventListener("input", function () {
+
+        if (this.value.trim()) {
+            this.classList.remove("error");
+        }
+
+    });
+
+});
+</script>
+
 {% endblock %}

@@ -1,66 +1,323 @@
 {% extends 'warehouse/base.html' %}
 
-{% block title %}Thông tin Nhà cung cấp - Warehouse AI{% endblock %}
-
 {% block content %}
+
 <div class="container-fluid px-0">
+
+    <!-- ========================================
+         CARD
+    ========================================= -->
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 text-primary"><i class="fas fa-edit me-2"></i> Thêm / Cập nhật Nhà cung cấp</h5>
-            <a href="{% url 'nha_cung_cap_list' %}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i> Quay lại
+
+        <!-- ========================================
+             HEADER
+        ========================================= -->
+        <div class="card-header bg-white py-3
+                    d-flex justify-content-between
+                    align-items-center">
+
+            <h5 class="mb-0 text-primary">
+
+                <i class="fas fa-truck me-2"></i>
+
+                {% if is_edit %}
+                    Cập nhật Nhà cung cấp
+                {% else %}
+                    Thêm Nhà cung cấp
+                {% endif %}
+
+            </h5>
+
+
+            <a href="{% url 'nha_cung_cap_list' %}"
+               class="btn btn-secondary btn-sm">
+
+                <i class="fas fa-arrow-left me-1"></i>
+                Quay lại
+
             </a>
+
         </div>
+
+
+        <!-- ========================================
+             BODY
+        ========================================= -->
         <div class="card-body">
-            <!-- Form thêm/sửa kết nối chuẩn Django -->
-            <form method="POST">
+
+            <!-- ====================================
+                 MESSAGES
+            ===================================== -->
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert
+                        {% if message.tags == 'success' %}
+                            alert-success
+                        {% elif message.tags == 'error' %}
+                            alert-danger
+                        {% elif message.tags == 'warning' %}
+                            alert-warning
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show"
+                        role="alert">
+
+                        {{ message }}
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert">
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+            <!-- ====================================
+                 FORM
+            ===================================== -->
+
+            {% if is_edit %}
+
+                <form method="POST"
+                      action="{% url 'nha_cung_cap_edit' nha_cc.pk %}">
+
+            {% else %}
+
+                <form method="POST"
+                      action="{% url 'nha_cung_cap_add' %}">
+
+            {% endif %}
+
                 {% csrf_token %}
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="maNCC" class="form-label">Mã nhà cung cấp <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="maNCC" name="ma_ncc" value="{{ ncc.ma_ncc|default:'' }}" required placeholder="Nhập mã nhà cung cấp...">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="tenNCC" class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="tenNCC" name="ten_ncc" value="{{ ncc.ten_ncc|default:'' }}" required placeholder="Nhập tên nhà cung cấp...">
-                    </div>
-                </div>
+
+
+                <!-- ====================================
+                     HÀNG 1
+                ===================================== -->
 
                 <div class="row mb-3">
+
+                    <!-- MÃ NCC -->
                     <div class="col-md-6">
-                        <label for="nguoiLienHe" class="form-label">Người liên hệ</label>
-                        <input type="text" class="form-control" id="nguoiLienHe" name="nguoi_lien_he" value="{{ ncc.nguoi_lien_he|default:'' }}" placeholder="Nhập tên người liên hệ...">
+
+                        <label for="maNCC"
+                               class="form-label">
+
+                            Mã nhà cung cấp
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="maNCC"
+                            name="ma_ncc"
+
+                            {% if request.method == 'POST' %}
+                                value="{{ request.POST.ma_ncc }}"
+                            {% elif is_edit %}
+                                value="{{ nha_cc.ma_ncc }}"
+                            {% endif %}
+
+                            maxlength="50"
+                            required
+                            placeholder="Nhập mã nhà cung cấp..."
+                        >
+
                     </div>
+
+
+                    <!-- TÊN NCC -->
                     <div class="col-md-6">
-                        <label for="soDienThoai" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
-                        <input type="tel" class="form-control" id="soDienThoai" name="so_dien_thoai" value="{{ ncc.so_dien_thoai|default:'' }}" required placeholder="Nhập số điện thoại...">
+
+                        <label for="tenNCC"
+                               class="form-label">
+
+                            Tên nhà cung cấp
+                            <span class="text-danger">*</span>
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="tenNCC"
+                            name="ten_ncc"
+
+                            {% if request.method == 'POST' %}
+                                value="{{ request.POST.ten_ncc }}"
+                            {% elif is_edit %}
+                                value="{{ nha_cc.ten_ncc }}"
+                            {% endif %}
+
+                            maxlength="255"
+                            required
+                            placeholder="Nhập tên nhà cung cấp..."
+                        >
+
                     </div>
+
                 </div>
 
+
+                <!-- ====================================
+                     HÀNG 2
+                ===================================== -->
+
                 <div class="row mb-3">
+
+                    <!-- SỐ ĐIỆN THOẠI -->
                     <div class="col-md-6">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ ncc.email|default:'' }}" placeholder="Nhập địa chỉ email...">
+
+                        <label for="soDienThoai"
+                               class="form-label">
+
+                            Số điện thoại
+
+                        </label>
+
+                        <input
+                            type="tel"
+                            class="form-control"
+                            id="soDienThoai"
+                            name="so_dien_thoai"
+
+                            {% if request.method == 'POST' %}
+                                value="{{ request.POST.so_dien_thoai }}"
+                            {% elif is_edit %}
+                                value="{{ nha_cc.so_dien_thoai|default:'' }}"
+                            {% endif %}
+
+                            maxlength="20"
+                            placeholder="Nhập số điện thoại..."
+                        >
+
                     </div>
+
+
+                    <!-- EMAIL -->
                     <div class="col-md-6">
-                        <label for="diaChi" class="form-label">Địa chỉ</label>
-                        <input type="text" class="form-control" id="diaChi" name="dia_chi" value="{{ ncc.dia_chi|default:'' }}" placeholder="Nhập địa chỉ...">
+
+                        <label for="email"
+                               class="form-label">
+
+                            Email
+
+                        </label>
+
+                        <input
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+
+                            {% if request.method == 'POST' %}
+                                value="{{ request.POST.email }}"
+                            {% elif is_edit %}
+                                value="{{ nha_cc.email|default:'' }}"
+                            {% endif %}
+
+                            maxlength="254"
+                            placeholder="Nhập địa chỉ email..."
+                        >
+
                     </div>
+
                 </div>
+
+
+                <!-- ====================================
+                     ĐỊA CHỈ
+                ===================================== -->
 
                 <div class="mb-4">
-                    <label for="ghiChu" class="form-label">Ghi chú</label>
-                    <textarea class="form-control" id="ghiChu" name="ghi_chu" rows="3" placeholder="Nhập ghi chú thêm...">{{ ncc.ghi_chu|default:'' }}</textarea>
+
+                    <label for="diaChi"
+                           class="form-label">
+
+                        Địa chỉ
+
+                    </label>
+
+                    <textarea
+                        class="form-control"
+                        id="diaChi"
+                        name="dia_chi"
+                        rows="3"
+                        placeholder="Nhập địa chỉ..."
+                    >{% if request.method == 'POST' %}{{ request.POST.dia_chi }}{% elif is_edit %}{{ nha_cc.dia_chi|default:'' }}{% endif %}</textarea>
+
                 </div>
 
+
+                <!-- ====================================
+                     THÔNG BÁO ĐANG SỬA
+                ===================================== -->
+
+                {% if is_edit %}
+
+                    <div class="alert alert-info">
+
+                        <i class="fas fa-info-circle me-2"></i>
+
+                        Đang chỉnh sửa nhà cung cấp:
+
+                        <strong>
+                            {{ nha_cc.ten_ncc }}
+                        </strong>
+
+                    </div>
+
+                {% endif %}
+
+
+                <!-- ====================================
+                     BUTTON
+                ===================================== -->
+
                 <div class="d-flex justify-content-end gap-2">
-                    <a href="{% url 'nha_cung_cap_list' %}" class="btn btn-secondary">Hủy</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> Lưu thông tin
+
+                    <!-- HỦY -->
+                    <a href="{% url 'nha_cung_cap_list' %}"
+                       class="btn btn-secondary">
+
+                        <i class="fas fa-times me-1"></i>
+                        Hủy
+
+                    </a>
+
+
+                    <!-- LƯU -->
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="fas fa-save me-1"></i>
+
+                        {% if is_edit %}
+                            Cập nhật
+                        {% else %}
+                            Lưu thông tin
+                        {% endif %}
+
                     </button>
+
                 </div>
+
+
             </form>
+
         </div>
+
     </div>
+
 </div>
+
 {% endblock %}

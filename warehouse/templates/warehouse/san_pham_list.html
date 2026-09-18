@@ -4,11 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Quản Lý Sản Phẩm - Kho AI</title>
+
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <style>
         body {
@@ -23,6 +30,10 @@
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
         }
 
+        .navbar-brand {
+            font-size: 1.1rem;
+        }
+
         .card {
             background-color: #ffffff;
             border: 1px solid #e3e6f0;
@@ -33,6 +44,7 @@
             color: #4e73df;
             font-weight: 600;
             border-bottom: 2px solid #e3e6f0;
+            white-space: nowrap;
         }
 
         .table td,
@@ -40,215 +52,716 @@
             vertical-align: middle;
             border-color: #e3e6f0;
         }
+
+        .table tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fc;
+        }
+
+        .action-form {
+            display: inline-block;
+            margin: 0;
+        }
+
+        .action-form button {
+            white-space: nowrap;
+        }
+
+        .action-link {
+            white-space: nowrap;
+        }
+
+        .search-box {
+            min-width: 0;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
+
+    <!-- =========================================================
+         NAVBAR
+    ========================================================== -->
     <nav class="navbar navbar-expand-lg navbar-light px-4 py-3">
-        <a class="navbar-brand fw-bold text-primary" href="{% url 'dashboard' %}">
-            <i class="bi bi-box-seam me-2"></i>QUẢN LÝ KHO AI
+
+        <a
+            class="navbar-brand fw-bold text-primary"
+            href="{% url 'dashboard' %}">
+            <i class="bi bi-box-seam me-2"></i>
+            QUẢN LÝ KHO AI
         </a>
+
         <div class="ms-auto d-flex align-items-center">
+
             <span class="me-3 text-secondary">
-                Xin chào, <strong class="text-dark">{{ username }}</strong>
-                {% if role %}<span class="badge bg-secondary ms-1">{{ role }}</span>{% endif %}
+                Xin chào,
+                <strong class="text-dark">{{ username }}</strong>
+
+                {% if role %}
+                <span class="badge bg-secondary ms-1">
+                    {{ role }}
+                </span>
+                {% endif %}
             </span>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-sm me-2">
-                <i class="bi bi-speedometer2 me-1"></i>Dashboard
+
+            <a
+                href="{% url 'dashboard' %}"
+                class="btn btn-outline-primary btn-sm me-2">
+                <i class="bi bi-speedometer2 me-1"></i>
+                Dashboard
             </a>
-            <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-box-arrow-right me-1"></i>Đăng xuất
+
+            <a
+                href="{% url 'logout' %}"
+                class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-box-arrow-right me-1"></i>
+                Đăng xuất
             </a>
+
         </div>
     </nav>
 
-    <!-- Main Content -->
+
+    <!-- =========================================================
+         MAIN CONTENT
+    ========================================================== -->
     <div class="container mt-4 mb-5">
-        <!-- Thông báo Messages -->
+
+        <!-- =====================================================
+             MESSAGES
+        ====================================================== -->
         {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm"
-            role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
+
+            {% for message in messages %}
+
+                <div
+                    class="alert
+                    {% if message.tags == 'error' %}
+                        alert-danger
+                    {% elif message.tags == 'success' %}
+                        alert-success
+                    {% elif message.tags == 'warning' %}
+                        alert-warning
+                    {% elif message.tags == 'info' %}
+                        alert-info
+                    {% else %}
+                        alert-secondary
+                    {% endif %}
+                    alert-dismissible fade show shadow-sm"
+                    role="alert">
+
+                    {{ message }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Close">
+                    </button>
+
+                </div>
+
+            {% endfor %}
+
         {% endif %}
 
+
+        <!-- =====================================================
+             CARD
+        ====================================================== -->
         <div class="card p-4 rounded-4 shadow-sm">
-            <!-- Header Title & Action Buttons -->
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+
+            <!-- =================================================
+                 HEADER
+            ================================================== -->
+            <div
+                class="d-flex flex-column flex-md-row
+                       justify-content-between
+                       align-items-md-center
+                       mb-3
+                       gap-2">
+
                 <h3 class="fw-bold text-dark mb-0">
-                    <i class="bi bi-boxes text-primary me-2"></i>Danh Sách Hàng Hóa Trong Kho
+
+                    <i class="bi bi-boxes text-primary me-2"></i>
+
+                    Danh Sách Hàng Hóa Trong Kho
+
                 </h3>
+
+
                 <div class="d-flex gap-2">
-                    <a href="{% url 'export_csv' %}" class="btn btn-outline-success btn-sm">
-                        <i class="bi bi-file-earmark-excel me-1"></i>Xuất Excel/CSV
+
+                    <!-- Xuất CSV -->
+                    <a
+                        href="{% url 'export_csv' %}"
+                        class="btn btn-outline-success btn-sm">
+
+                        <i class="bi bi-file-earmark-excel me-1"></i>
+
+                        Xuất Excel/CSV
+
                     </a>
-                    <a href="{% url 'san_pham_add' %}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-plus-circle me-1"></i>Thêm sản phẩm
+
+
+                    <!-- Thêm sản phẩm -->
+                    <a
+                        href="{% url 'san_pham_add' %}"
+                        class="btn btn-primary btn-sm">
+
+                        <i class="bi bi-plus-circle me-1"></i>
+
+                        Thêm sản phẩm
+
                     </a>
+
                 </div>
+
             </div>
+
 
             <hr class="text-muted opacity-25 my-3">
 
-            <!-- Form Tìm kiếm & Bộ Lọc -->
-            <form method="GET" action="{% url 'san_pham_list' %}" class="row g-2 mb-4">
-                <div class="col-md-6 col-lg-7">
+
+            <!-- =================================================
+                 TÌM KIẾM + BỘ LỌC
+            ================================================== -->
+            <form
+                method="GET"
+                action="{% url 'san_pham_list' %}"
+                class="row g-2 mb-4">
+
+                <!-- Ô tìm kiếm -->
+                <div class="col-md-6 col-lg-7 search-box">
+
                     <div class="input-group">
-                        <span class="input-group-text bg-light text-muted border-end-0">
+
+                        <span
+                            class="input-group-text
+                                   bg-light
+                                   text-muted
+                                   border-end-0">
+
                             <i class="bi bi-search"></i>
+
                         </span>
-                        <input type="text" name="q" value="{{ query }}" class="form-control border-start-0"
+
+
+                        <input
+                            type="text"
+                            name="q"
+                            value="{{ query|default:'' }}"
+                            class="form-control border-start-0"
                             placeholder="Nhập mã hàng hoặc tên sản phẩm cần tìm...">
+
                     </div>
+
                 </div>
+
+
+                <!-- Bộ lọc -->
                 <div class="col-md-3">
-                    <select name="status" class="form-select" onchange="this.form.submit()">
-                        <option value="all" {% if filter_status == 'all' %}selected{% endif %}>Tất cả trạng thái kho</option>
-                        <option value="low_stock" {% if filter_status == 'low_stock' %}selected{% endif %}>⚠️ Hàng sắp hết (&lt; 10)</option>
+
+                    <select
+                        name="status"
+                        class="form-select"
+                        onchange="this.form.submit()">
+
+                        <option
+                            value="all"
+                            {% if filter_status == 'all' %}selected{% endif %}>
+
+                            Tất cả trạng thái kho
+
+                        </option>
+
+                        <option
+                            value="low_stock"
+                            {% if filter_status == 'low_stock' %}selected{% endif %}>
+
+                            ⚠️ Hàng sắp hết (&lt; 10)
+
+                        </option>
+
                     </select>
+
                 </div>
+
+
+                <!-- Nút tìm kiếm -->
                 <div class="col-md-3 col-lg-2 d-flex gap-1">
-                    <button class="btn btn-primary w-100" type="submit">Tìm kiếm</button>
+
+                    <button
+                        class="btn btn-primary w-100"
+                        type="submit">
+
+                        <i class="bi bi-search me-1"></i>
+
+                        Tìm kiếm
+
+                    </button>
+
+
                     {% if query or filter_status != 'all' %}
-                    <a href="{% url 'san_pham_list' %}" class="btn btn-outline-secondary" title="Xóa bộ lọc">
+
+                    <a
+                        href="{% url 'san_pham_list' %}"
+                        class="btn btn-outline-secondary"
+                        title="Xóa bộ lọc">
+
                         <i class="bi bi-arrow-clockwise"></i>
+
                     </a>
+
                     {% endif %}
+
                 </div>
+
             </form>
 
-            <!-- Bảng Dữ Liệu -->
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th class="ps-3">Mã hàng</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Nhóm hàng</th>
-                            <th>Số lượng tồn</th>
-                            <th>Giá xuất</th>
-                            <th class="text-center">Nhập/Xuất kho</th>
-                            <th class="text-end pe-3">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for sp in danh_sach %}
-                        <tr>
-                            <td class="ps-3 fw-bold text-primary">{{ sp.ma_hang }}</td>
-                            <td class="fw-semibold">{{ sp.ten_hang }}</td>
-                            <td>
-                                {% if sp.nhom_hang %}
-                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill">
-                                    {{ sp.nhom_hang.ten_nhom }}
-                                </span>
-                                {% else %}
-                                <span class="text-muted small">—</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if sp.so_luong_ton < 10 %} 
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ sp.so_luong_ton }} (Sắp hết)
-                                </span>
-                                {% else %}
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill">
-                                    {{ sp.so_luong_ton }}
-                                </span>
-                                {% endif %}
-                            </td>
-                            <td class="text-dark fw-semibold">{{ sp.gia_xuat|floatformat:0 }} đ</td>
-                            
-                            <!-- Cột Nhập/Xuất kho -->
-<td class="text-center">
-    <a href="{% url 'phieu_nhap_create' %}?san_pham_id={{ sp.id }}" class="btn btn-sm btn-outline-success me-1" title="Lập phiếu nhập kho">
-        <i class="bi bi-arrow-down-circle"></i> Nhập
-    </a>
-    <a href="{% url 'phieu_xuat_create' %}?san_pham_id={{ sp.id }}" class="btn btn-sm btn-outline-warning" title="Lập phiếu xuất kho">
-        <i class="bi bi-arrow-up-circle"></i> Xuất
-    </a>
-</td>
 
-                            <!-- Cột Thao tác (Đã thêm nút Lô & HSD) -->
-                            <td class="text-end pe-3">
-                                <a href="{% url 'chi_tiet_lo_hang' sp.id %}" class="btn btn-sm btn-outline-info me-1" title="Xem chi tiết NSX & HSD">
-                                    <i class="bi bi-calendar-date"></i> Lô & HSD
-                                </a>
-                                <a href="{% url 'san_pham_edit' sp.id %}" class="btn btn-sm btn-outline-primary me-1"
-                                    title="Sửa">
-                                    <i class="bi bi-pencil-square"></i> Sửa
-                                </a>
-                                <a href="{% url 'san_pham_delete' sp.id %}" class="btn btn-sm btn-outline-danger"
-                                    onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm {{ sp.ten_hang }} không?');"
-                                    title="Xóa">
-                                    <i class="bi bi-trash"></i> Xóa
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
+            <!-- =================================================
+                 BẢNG SẢN PHẨM
+            ================================================== -->
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead>
+
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
-                                <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                                Không tìm thấy sản phẩm nào! Hãy bấm <strong>"+ Thêm sản phẩm"</strong> để bắt đầu.
-                            </td>
+
+                            <th class="ps-3">
+                                Mã hàng
+                            </th>
+
+                            <th>
+                                Tên sản phẩm
+                            </th>
+
+                            <th>
+                                Nhóm hàng
+                            </th>
+
+                            <th>
+                                Số lượng tồn
+                            </th>
+
+                            <th>
+                                Giá xuất
+                            </th>
+
+                            <th class="text-center">
+                                Nhập/Xuất kho
+                            </th>
+
+                            <th class="text-end pe-3">
+                                Thao tác
+                            </th>
+
                         </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for sp in danh_sach %}
+
+                        <tr>
+
+                            <!-- =================================
+                                 MÃ HÀNG
+                            ================================== -->
+                            <td class="ps-3 fw-bold text-primary">
+
+                                {{ sp.ma_hang }}
+
+                            </td>
+
+
+                            <!-- =================================
+                                 TÊN SẢN PHẨM
+                            ================================== -->
+                            <td class="fw-semibold">
+
+                                {{ sp.ten_hang }}
+
+                            </td>
+
+
+                            <!-- =================================
+                                 NHÓM HÀNG
+                            ================================== -->
+                            <td>
+
+                                {% if sp.nhom_hang %}
+
+                                <span
+                                    class="badge
+                                           bg-secondary-subtle
+                                           text-secondary
+                                           border
+                                           border-secondary-subtle
+                                           px-2
+                                           py-1
+                                           rounded-pill">
+
+                                    {{ sp.nhom_hang.ten_nhom }}
+
+                                </span>
+
+                                {% else %}
+
+                                <span class="text-muted small">
+                                    —
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================
+                                 SỐ LƯỢNG TỒN
+                            ================================== -->
+                            <td>
+
+                                {% if sp.so_luong_ton < 10 %}
+
+                                <span
+                                    class="badge
+                                           bg-danger-subtle
+                                           text-danger
+                                           border
+                                           border-danger-subtle
+                                           px-2
+                                           py-1
+                                           rounded-pill">
+
+                                    <i
+                                        class="bi bi-exclamation-triangle-fill me-1">
+                                    </i>
+
+                                    {{ sp.so_luong_ton }}
+
+                                    (Sắp hết)
+
+                                </span>
+
+                                {% else %}
+
+                                <span
+                                    class="badge
+                                           bg-success-subtle
+                                           text-success
+                                           border
+                                           border-success-subtle
+                                           px-2
+                                           py-1
+                                           rounded-pill">
+
+                                    {{ sp.so_luong_ton }}
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- =================================
+                                 GIÁ XUẤT
+                            ================================== -->
+                            <td class="text-dark fw-semibold">
+
+                                {{ sp.gia_xuat|floatformat:0 }} đ
+
+                            </td>
+
+
+                            <!-- =================================
+                                 NHẬP / XUẤT KHO
+                            ================================== -->
+                            <td class="text-center">
+
+                                <!-- Nhập -->
+                                <a
+                                    href="{% url 'phieu_nhap_create' %}?san_pham_id={{ sp.id }}"
+                                    class="btn btn-sm btn-outline-success me-1 action-link"
+                                    title="Lập phiếu nhập kho">
+
+                                    <i class="bi bi-arrow-down-circle"></i>
+
+                                    Nhập
+
+                                </a>
+
+
+                                <!-- Xuất -->
+                                <a
+                                    href="{% url 'phieu_xuat_create' %}?san_pham_id={{ sp.id }}"
+                                    class="btn btn-sm btn-outline-warning action-link"
+                                    title="Lập phiếu xuất kho">
+
+                                    <i class="bi bi-arrow-up-circle"></i>
+
+                                    Xuất
+
+                                </a>
+
+                            </td>
+
+
+                            <!-- =================================
+                                 THAO TÁC
+                            ================================== -->
+                            <td class="text-end pe-3">
+
+                                <!-- Lô & HSD -->
+                                <a
+                                    href="{% url 'chi_tiet_lo_hang' sp.id %}"
+                                    class="btn btn-sm btn-outline-info me-1 action-link"
+                                    title="Xem chi tiết NSX & HSD">
+
+                                    <i class="bi bi-calendar-date"></i>
+
+                                    Lô & HSD
+
+                                </a>
+
+
+                                <!-- Sửa -->
+                                <a
+                                    href="{% url 'san_pham_edit' sp.id %}"
+                                    class="btn btn-sm btn-outline-primary me-1 action-link"
+                                    title="Sửa sản phẩm">
+
+                                    <i class="bi bi-pencil-square"></i>
+
+                                    Sửa
+
+                                </a>
+
+
+                                <!-- =================================
+                                     XÓA SẢN PHẨM
+                                ================================== -->
+
+                                <form
+                                    method="POST"
+                                    action="{% url 'san_pham_delete' sp.id %}"
+                                    class="action-form"
+                                    onsubmit="return confirm('Bạn có chắc chắn muốn xóa sản phẩm {{ sp.ten_hang|escapejs }} không?');">
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Xóa sản phẩm">
+
+                                        <i class="bi bi-trash"></i>
+
+                                        Xóa
+
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+
+                        {% empty %}
+
+                        <!-- =====================================
+                             KHÔNG CÓ DỮ LIỆU
+                        ====================================== -->
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="text-center text-muted py-5">
+
+                                <i
+                                    class="bi bi-inbox
+                                           d-block
+                                           mb-2
+                                           text-secondary
+                                           opacity-50
+                                           empty-icon">
+                                </i>
+
+                                <div>
+
+                                    Không tìm thấy sản phẩm nào!
+
+                                </div>
+
+                                <div class="mt-2">
+
+                                    Hãy bấm
+
+                                    <strong>
+                                        "+ Thêm sản phẩm"
+                                    </strong>
+
+                                    để bắt đầu.
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
                         {% endfor %}
+
                     </tbody>
+
                 </table>
+
             </div>
 
-            <!-- Phân Trang -->
+
+            <!-- =================================================
+                 PHÂN TRANG
+            ================================================== -->
             {% if danh_sach.has_other_pages %}
-            <nav class="mt-4">
+
+            <nav
+                class="mt-4"
+                aria-label="Phân trang sản phẩm">
+
                 <ul class="pagination justify-content-center mb-0">
+
+                    <!-- Trang trước -->
                     {% if danh_sach.has_previous %}
+
                     <li class="page-item">
-                        <a class="page-link"
+
+                        <a
+                            class="page-link"
                             href="?q={{ query }}&status={{ filter_status }}&page={{ danh_sach.previous_page_number }}">
-                            <i class="bi bi-chevron-left"></i> Trang trước
+
+                            <i class="bi bi-chevron-left"></i>
+
+                            Trang trước
+
                         </a>
+
                     </li>
+
                     {% else %}
+
                     <li class="page-item disabled">
-                        <span class="page-link text-muted"><i class="bi bi-chevron-left"></i> Trang trước</span>
+
+                        <span class="page-link text-muted">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                            Trang trước
+
+                        </span>
+
                     </li>
+
                     {% endif %}
 
+
+                    <!-- Số trang -->
                     {% for num in danh_sach.paginator.page_range %}
-                    {% if danh_sach.number == num %}
-                    <li class="page-item active">
-                        <span class="page-link">{{ num }}</span>
-                    </li>
-                    {% else %}
-                    <li class="page-item">
-                        <a class="page-link" href="?q={{ query }}&status={{ filter_status }}&page={{ num }}">{{ num }}</a>
-                    </li>
-                    {% endif %}
+
+                        {% if danh_sach.number == num %}
+
+                        <li class="page-item active">
+
+                            <span class="page-link">
+
+                                {{ num }}
+
+                            </span>
+
+                        </li>
+
+                        {% else %}
+
+                        <li class="page-item">
+
+                            <a
+                                class="page-link"
+                                href="?q={{ query }}&status={{ filter_status }}&page={{ num }}">
+
+                                {{ num }}
+
+                            </a>
+
+                        </li>
+
+                        {% endif %}
+
                     {% endfor %}
 
+
+                    <!-- Trang sau -->
                     {% if danh_sach.has_next %}
+
                     <li class="page-item">
-                        <a class="page-link"
+
+                        <a
+                            class="page-link"
                             href="?q={{ query }}&status={{ filter_status }}&page={{ danh_sach.next_page_number }}">
-                            Trang sau <i class="bi bi-chevron-right"></i>
+
+                            Trang sau
+
+                            <i class="bi bi-chevron-right"></i>
+
                         </a>
+
                     </li>
+
                     {% else %}
+
                     <li class="page-item disabled">
-                        <span class="page-link text-muted">Trang sau <i class="bi bi-chevron-right"></i></span>
+
+                        <span class="page-link text-muted">
+
+                            Trang sau
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </span>
+
                     </li>
+
                     {% endif %}
+
                 </ul>
+
             </nav>
+
             {% endif %}
+
         </div>
+
     </div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- =========================================================
+         BOOTSTRAP JS
+    ========================================================== -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
+
 </body>
 
 </html>

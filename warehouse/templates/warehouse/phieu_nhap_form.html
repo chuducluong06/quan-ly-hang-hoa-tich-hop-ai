@@ -2,164 +2,801 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Tạo Phiếu Nhập Kho - Warehouse AI</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body class="bg-gray-50 p-6 md:p-8">
-    <div class="max-w-6xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow border border-gray-200">
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-            <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                <i class="fa-solid fa-file-import text-blue-600 mr-2"></i> Lập Phiếu Nhập Kho
-            </h2>
-            <a href="{% url 'phieu_nhap_list' %}" class="text-gray-500 hover:text-gray-700 text-sm font-medium flex items-center">
-                <i class="fa-solid fa-arrow-left mr-1"></i> Quay lại
-            </a>
-        </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="mb-4 p-4 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700{% elif message.tags == 'success' %}bg-green-50 border border-green-200 text-green-700{% else %}bg-blue-50 border border-blue-200 text-blue-700{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+<div class="max-w-6xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow border border-gray-200">
 
-        <form method="POST" class="space-y-6">
-            {% csrf_token %}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Mã phiếu <span class="text-red-500">*</span></label>
-                    <input type="text" name="ma_phieu" value="{{ ma_phieu_tu_dong }}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    <p class="text-xs text-gray-400 mt-1">Mã phiếu được tạo tự động, bạn có thể chỉnh sửa.</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nhà cung cấp <span class="text-red-500">*</span></label>
-                    <input type="text" name="nha_cung_cap" required placeholder="VD: Tập đoàn ABC, Nhà phân phối XYZ..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-            </div>
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
 
-            <div class="border-t pt-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="font-semibold text-gray-700">Chọn hàng hóa nhập kho</h3>
-                    <button type="button" onclick="themDongHang()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-3 py-1.5 rounded-lg border flex items-center gap-1 transition">
-                        <i class="fa-solid fa-plus text-blue-600"></i> Thêm mặt hàng
-                    </button>
-                </div>
+        <h2 class="text-xl font-bold text-gray-800 flex items-center">
 
-                <div class="bg-gray-50 p-4 rounded-lg border space-y-3">
-                    <!-- Tiêu đề các cột (Tổng 12 cột) -->
-                    <div class="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-500 uppercase px-1">
-                        <div class="col-span-4">Sản phẩm (Tồn hiện tại)</div>
-                        <div class="col-span-2">Số lượng</div>
-                        <div class="col-span-2">Đơn giá (VNĐ)</div>
-                        <div class="col-span-2">Ngày sản xuất</div>
-                        <div class="col-span-1">Hạn sử dụng</div>
-                        <div class="col-span-1 text-center">Xóa</div>
-                    </div>
+            <i class="fa-solid fa-file-import text-blue-600 mr-2"></i>
 
-                    <div id="danhSachHangContainer" class="space-y-2">
-                        <div class="hang-item grid grid-cols-12 gap-2 items-center">
-                            <!-- Chọn sản phẩm -->
-                            <div class="col-span-4">
-                                <select name="hang_hoa_id[]" onchange="capNhatGia(this)" class="select-hang w-full px-3 py-2 border rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 outline-none" required>
-                                    <option value="" disabled selected>-- Chọn sản phẩm --</option>
-                                    {% for hang in danh_sach_hang %}
-                                    <option value="{{ hang.id }}" data-gia="{{ hang.gia_nhap }}">
-                                        {{ hang.ma_hang }} - {{ hang.ten_hang }} (Tồn: {{ hang.so_luong_ton }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <!-- Số lượng -->
-                            <div class="col-span-2">
-                                <input type="number" name="so_luong[]" value="1" min="1" required class="input-sl w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <!-- Đơn giá -->
-                            <div class="col-span-2">
-                                <input type="number" step="any" name="don_gia[]" value="0" min="0" required class="input-gia w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <!-- Ngày sản xuất -->
-                            <div class="col-span-2">
-                                <input type="date" name="ngay_san_xuat[]" class="input-nsx w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <!-- Hạn sử dụng -->
-                            <div class="col-span-1">
-                                <input type="date" name="han_su_dung[]" class="input-hsd w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <!-- Nút Xóa -->
-                            <div class="col-span-1 text-center">
-                                <button type="button" onclick="xoaDongHang(this)" class="text-gray-400 hover:text-red-600 transition p-1" title="Xóa dòng này">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            Lập Phiếu Nhập Kho
 
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Ghi chú</label>
-                <textarea name="ghi_chu" rows="3" placeholder="Ghi chú thêm về lô hàng, số hóa đơn..." class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-            </div>
+        </h2>
 
-            <div class="flex justify-end space-x-3 pt-4 border-t">
-                <a href="{% url 'phieu_nhap_list' %}" class="px-5 py-2 rounded-lg border text-gray-600 hover:bg-gray-100 text-sm font-medium">Hủy</a>
-                <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow transition">
-                    <i class="fa-solid fa-check mr-1"></i> Lưu phiếu nhập
-                </button>
-            </div>
-        </form>
+        <a href="{% url 'phieu_nhap_list' %}"
+           class="text-gray-500 hover:text-gray-700 text-sm font-medium flex items-center">
+
+            <i class="fa-solid fa-arrow-left mr-1"></i>
+
+            Quay lại
+
+        </a>
+
     </div>
 
-    <script>
-        function capNhatGia(selectElement) {
-            const selectedOption = selectElement.options[selectElement.selectedIndex];
-            const gia = selectedOption.getAttribute('data-gia') || 0;
-            
-            const row = selectElement.closest('.hang-item');
-            const giaInput = row.querySelector('.input-gia');
-            
-            if (giaInput) giaInput.value = parseFloat(gia);
+
+
+    <!-- =====================================================
+         MESSAGES
+    ====================================================== -->
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div class="mb-4 p-4 rounded-lg text-sm
+                {% if message.tags == 'error' %}
+                    bg-red-50 border border-red-200 text-red-700
+                {% elif message.tags == 'success' %}
+                    bg-green-50 border border-green-200 text-green-700
+                {% else %}
+                    bg-blue-50 border border-blue-200 text-blue-700
+                {% endif %}">
+
+                {% if message.tags == 'error' %}
+                    <i class="fa-solid fa-circle-exclamation mr-2"></i>
+                {% elif message.tags == 'success' %}
+                    <i class="fa-solid fa-circle-check mr-2"></i>
+                {% else %}
+                    <i class="fa-solid fa-circle-info mr-2"></i>
+                {% endif %}
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+
+    <!-- =====================================================
+         FORM
+    ====================================================== -->
+    <form method="POST"
+          action=""
+          class="space-y-6"
+          id="phieuNhapForm">
+
+        {% csrf_token %}
+
+
+
+        <!-- =================================================
+             THÔNG TIN PHIẾU
+        ================================================== -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <!-- MÃ PHIẾU -->
+            <div>
+
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+
+                    Mã phiếu
+
+                    <span class="text-red-500">*</span>
+
+                </label>
+
+                <input type="text"
+                       name="ma_phieu"
+                       value="{{ ma_phieu_tu_dong }}"
+                       required
+                       autocomplete="off"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg
+                              focus:ring-2 focus:ring-blue-500
+                              focus:border-blue-500
+                              outline-none">
+
+                <p class="text-xs text-gray-400 mt-1">
+                    Mã phiếu được tạo tự động, bạn có thể chỉnh sửa.
+                </p>
+
+            </div>
+
+
+
+            <!-- NHÀ CUNG CẤP -->
+            <div>
+
+                <label class="block text-sm font-semibold text-gray-700 mb-1">
+
+                    Nhà cung cấp
+
+                    <span class="text-red-500">*</span>
+
+                </label>
+
+                <!--
+                    QUAN TRỌNG:
+                    View đang nhận ID nhà cung cấp.
+                    Vì vậy phải dùng SELECT thay vì INPUT TEXT.
+                -->
+                <select name="nha_cung_cap"
+                        required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg
+                               bg-white
+                               focus:ring-2 focus:ring-blue-500
+                               focus:border-blue-500
+                               outline-none">
+
+                    <option value="">
+                        -- Chọn nhà cung cấp --
+                    </option>
+
+                    {% for ncc in danh_sach_ncc %}
+
+                        <option value="{{ ncc.id }}">
+
+                            {{ ncc.ma_ncc }} - {{ ncc.ten_ncc }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <p class="text-xs text-gray-400 mt-1">
+                    Chọn nhà cung cấp từ danh sách đã có trong hệ thống.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             DANH SÁCH HÀNG HÓA
+        ================================================== -->
+        <div class="border-t pt-4">
+
+            <div class="flex items-center justify-between mb-3">
+
+                <h3 class="font-semibold text-gray-700">
+
+                    Chọn hàng hóa nhập kho
+
+                </h3>
+
+
+                <button type="button"
+                        onclick="themDongHang()"
+                        class="text-xs
+                               bg-gray-100
+                               hover:bg-gray-200
+                               text-gray-700
+                               font-semibold
+                               px-3 py-1.5
+                               rounded-lg
+                               border
+                               flex
+                               items-center
+                               gap-1
+                               transition">
+
+                    <i class="fa-solid fa-plus text-blue-600"></i>
+
+                    Thêm mặt hàng
+
+                </button>
+
+            </div>
+
+
+
+            <!-- CONTAINER -->
+            <div class="bg-gray-50 p-4 rounded-lg border space-y-3">
+
+                <!-- TIÊU ĐỀ -->
+                <div class="grid grid-cols-12 gap-2
+                            text-xs font-semibold text-gray-500
+                            uppercase px-1">
+
+                    <div class="col-span-4">
+                        Sản phẩm
+                    </div>
+
+                    <div class="col-span-2">
+                        Số lượng
+                    </div>
+
+                    <div class="col-span-2">
+                        Đơn giá (VNĐ)
+                    </div>
+
+                    <div class="col-span-2">
+                        Ngày sản xuất
+                    </div>
+
+                    <div class="col-span-1">
+                        Hạn sử dụng
+                    </div>
+
+                    <div class="col-span-1 text-center">
+                        Xóa
+                    </div>
+
+                </div>
+
+
+
+                <!-- DANH SÁCH DÒNG -->
+                <div id="danhSachHangContainer"
+                     class="space-y-2">
+
+
+                    <!-- =================================================
+                         DÒNG HÀNG MẶC ĐỊNH
+                    ================================================== -->
+                    <div class="hang-item
+                                grid grid-cols-12
+                                gap-2
+                                items-center">
+
+
+                        <!-- SẢN PHẨM -->
+                        <div class="col-span-4">
+
+                            <select name="hang_hoa_id[]"
+                                    onchange="capNhatGia(this)"
+                                    class="select-hang
+                                           w-full
+                                           px-3 py-2
+                                           border border-gray-300
+                                           rounded-lg
+                                           bg-white
+                                           text-sm
+                                           focus:ring-2
+                                           focus:ring-blue-500
+                                           outline-none"
+                                    required>
+
+                                <option value="" selected disabled>
+                                    -- Chọn sản phẩm --
+                                </option>
+
+                                {% for hang in danh_sach_hang %}
+
+                                    <option value="{{ hang.id }}"
+                                            data-gia="{{ hang.gia_nhap|default:'0' }}">
+
+                                        {{ hang.ma_hang }}
+                                        -
+                                        {{ hang.ten_hang }}
+                                        (Tồn: {{ hang.so_luong_ton }})
+
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- SỐ LƯỢNG -->
+                        <div class="col-span-2">
+
+                            <input type="number"
+                                   name="so_luong[]"
+                                   value="1"
+                                   min="1"
+                                   step="1"
+                                   required
+                                   class="input-sl
+                                          w-full
+                                          px-3 py-2
+                                          border border-gray-300
+                                          rounded-lg
+                                          text-sm
+                                          focus:ring-2
+                                          focus:ring-blue-500
+                                          outline-none">
+
+                        </div>
+
+
+
+                        <!-- ĐƠN GIÁ -->
+                        <div class="col-span-2">
+
+                            <input type="number"
+                                   step="0.01"
+                                   name="don_gia[]"
+                                   value="0"
+                                   min="0"
+                                   required
+                                   class="input-gia
+                                          w-full
+                                          px-3 py-2
+                                          border border-gray-300
+                                          rounded-lg
+                                          text-sm
+                                          focus:ring-2
+                                          focus:ring-blue-500
+                                          outline-none">
+
+                        </div>
+
+
+
+                        <!-- NGÀY SẢN XUẤT -->
+                        <div class="col-span-2">
+
+                            <input type="date"
+                                   name="ngay_san_xuat[]"
+                                   class="input-nsx
+                                          w-full
+                                          px-3 py-2
+                                          border border-gray-300
+                                          rounded-lg
+                                          text-sm
+                                          bg-white
+                                          focus:ring-2
+                                          focus:ring-blue-500
+                                          outline-none">
+
+                        </div>
+
+
+
+                        <!-- HẠN SỬ DỤNG -->
+                        <div class="col-span-1">
+
+                            <input type="date"
+                                   name="han_su_dung[]"
+                                   class="input-hsd
+                                          w-full
+                                          px-3 py-2
+                                          border border-gray-300
+                                          rounded-lg
+                                          text-sm
+                                          bg-white
+                                          focus:ring-2
+                                          focus:ring-blue-500
+                                          outline-none">
+
+                        </div>
+
+
+
+                        <!-- XÓA -->
+                        <div class="col-span-1 text-center">
+
+                            <button type="button"
+                                    onclick="xoaDongHang(this)"
+                                    class="text-gray-400
+                                           hover:text-red-600
+                                           transition
+                                           p-1"
+                                    title="Xóa dòng này">
+
+                                <i class="fa-solid fa-trash-can"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             GHI CHÚ
+        ================================================== -->
+        <div>
+
+            <label class="block text-sm font-semibold text-gray-700 mb-1">
+
+                Ghi chú
+
+            </label>
+
+            <textarea name="ghi_chu"
+                      rows="3"
+                      placeholder="Ghi chú thêm về lô hàng, số hóa đơn..."
+                      class="w-full
+                             px-4 py-2
+                             border border-gray-300
+                             rounded-lg
+                             focus:ring-2
+                             focus:ring-blue-500
+                             outline-none"></textarea>
+
+        </div>
+
+
+
+        <!-- =================================================
+             BUTTON
+        ================================================== -->
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+
+            <a href="{% url 'phieu_nhap_list' %}"
+               class="px-5 py-2
+                      rounded-lg
+                      border
+                      text-gray-600
+                      hover:bg-gray-100
+                      text-sm
+                      font-medium">
+
+                Hủy
+
+            </a>
+
+
+            <button type="submit"
+                    id="btnLuuPhieu"
+                    class="px-5 py-2
+                           rounded-lg
+                           bg-blue-600
+                           hover:bg-blue-700
+                           text-white
+                           text-sm
+                           font-semibold
+                           shadow
+                           transition">
+
+                <i class="fa-solid fa-check mr-1"></i>
+
+                Lưu phiếu nhập
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================== -->
+<script>
+
+    /*
+     * Tự động lấy giá nhập của sản phẩm
+     */
+    function capNhatGia(selectElement) {
+
+        const selectedOption =
+            selectElement.options[selectElement.selectedIndex];
+
+        if (!selectedOption) {
+            return;
         }
 
-        function themDongHang() {
-            const container = document.getElementById('danhSachHangContainer');
-            const firstRow = container.querySelector('.hang-item');
-            if (!firstRow) return;
-            
-            const newRow = firstRow.cloneNode(true);
-            const select = newRow.querySelector('.select-hang');
-            const sl = newRow.querySelector('.input-sl');
-            const gia = newRow.querySelector('.input-gia');
-            const nsx = newRow.querySelector('.input-nsx');
-            const hsd = newRow.querySelector('.input-hsd');
-            
+        const gia =
+            selectedOption.getAttribute('data-gia') || '0';
+
+        const row =
+            selectElement.closest('.hang-item');
+
+        if (!row) {
+            return;
+        }
+
+        const giaInput =
+            row.querySelector('.input-gia');
+
+        if (giaInput) {
+
+            const giaNumber =
+                parseFloat(gia);
+
+            giaInput.value =
+                Number.isFinite(giaNumber)
+                    ? giaNumber
+                    : 0;
+
+        }
+
+    }
+
+
+
+    /*
+     * Thêm một dòng hàng hóa
+     */
+    function themDongHang() {
+
+        const container =
+            document.getElementById(
+                'danhSachHangContainer'
+            );
+
+        if (!container) {
+            return;
+        }
+
+        const firstRow =
+            container.querySelector('.hang-item');
+
+        if (!firstRow) {
+            return;
+        }
+
+        const newRow =
+            firstRow.cloneNode(true);
+
+
+        const select =
+            newRow.querySelector('.select-hang');
+
+        const sl =
+            newRow.querySelector('.input-sl');
+
+        const gia =
+            newRow.querySelector('.input-gia');
+
+        const nsx =
+            newRow.querySelector('.input-nsx');
+
+        const hsd =
+            newRow.querySelector('.input-hsd');
+
+
+        /* Reset sản phẩm */
+        if (select) {
             select.selectedIndex = 0;
+        }
+
+
+        /* Reset số lượng */
+        if (sl) {
             sl.value = 1;
+        }
+
+
+        /* Reset đơn giá */
+        if (gia) {
             gia.value = 0;
-            if (nsx) nsx.value = '';
-            if (hsd) hsd.value = '';
-            
-            container.appendChild(newRow);
         }
 
-        function xoaDongHang(btn) {
-            const container = document.getElementById('danhSachHangContainer');
-            const rows = container.querySelectorAll('.hang-item');
-            if (rows.length > 1) {
-                btn.closest('.hang-item').remove();
-            } else {
-                alert('Phiếu nhập phải có ít nhất một mặt hàng.');
-            }
+
+        /* Reset ngày sản xuất */
+        if (nsx) {
+            nsx.value = '';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const firstSelect = document.querySelector('.select-hang');
-            if (firstSelect && firstSelect.value) {
-                capNhatGia(firstSelect);
+
+        /* Reset hạn sử dụng */
+        if (hsd) {
+            hsd.value = '';
+        }
+
+
+        container.appendChild(newRow);
+
+    }
+
+
+
+    /*
+     * Xóa dòng hàng
+     */
+    function xoaDongHang(btn) {
+
+        const container =
+            document.getElementById(
+                'danhSachHangContainer'
+            );
+
+        if (!container) {
+            return;
+        }
+
+        const rows =
+            container.querySelectorAll(
+                '.hang-item'
+            );
+
+
+        /*
+         * Luôn phải có ít nhất 1 dòng
+         */
+        if (rows.length <= 1) {
+
+            alert(
+                'Phiếu nhập phải có ít nhất một mặt hàng.'
+            );
+
+            return;
+        }
+
+
+        const row =
+            btn.closest('.hang-item');
+
+        if (row) {
+            row.remove();
+        }
+
+    }
+
+
+
+    /*
+     * Kiểm tra form trước khi gửi
+     */
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            const form =
+                document.getElementById(
+                    'phieuNhapForm'
+                );
+
+            if (!form) {
+                return;
             }
-        });
-    </script>
+
+
+            form.addEventListener(
+                'submit',
+                function (event) {
+
+                    const selects =
+                        document.querySelectorAll(
+                            '.select-hang'
+                        );
+
+                    let coSanPham = false;
+
+
+                    selects.forEach(
+                        function (select) {
+
+                            if (select.value) {
+                                coSanPham = true;
+                            }
+
+                        }
+                    );
+
+
+                    if (!coSanPham) {
+
+                        event.preventDefault();
+
+                        alert(
+                            'Vui lòng chọn ít nhất một sản phẩm nhập kho.'
+                        );
+
+                        return;
+
+                    }
+
+
+                    /*
+                     * Kiểm tra số lượng
+                     */
+                    const soLuongs =
+                        document.querySelectorAll(
+                            '.input-sl'
+                        );
+
+                    for (
+                        let i = 0;
+                        i < soLuongs.length;
+                        i++
+                    ) {
+
+                        const value =
+                            parseInt(
+                                soLuongs[i].value,
+                                10
+                            );
+
+
+                        if (
+                            !Number.isInteger(value) ||
+                            value <= 0
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                'Số lượng ở dòng ' +
+                                (i + 1) +
+                                ' phải lớn hơn 0.'
+                            );
+
+                            soLuongs[i].focus();
+
+                            return;
+
+                        }
+
+                    }
+
+
+                    /*
+                     * Kiểm tra đơn giá
+                     */
+                    const donGias =
+                        document.querySelectorAll(
+                            '.input-gia'
+                        );
+
+                    for (
+                        let i = 0;
+                        i < donGias.length;
+                        i++
+                    ) {
+
+                        const value =
+                            parseFloat(
+                                donGias[i].value
+                            );
+
+
+                        if (
+                            !Number.isFinite(value) ||
+                            value < 0
+                        ) {
+
+                            event.preventDefault();
+
+                            alert(
+                                'Đơn giá ở dòng ' +
+                                (i + 1) +
+                                ' không hợp lệ.'
+                            );
+
+                            donGias[i].focus();
+
+                            return;
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+</script>
+
 </body>
 </html>

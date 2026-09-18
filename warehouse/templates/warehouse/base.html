@@ -91,10 +91,12 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 250px;
+            width: 270px;
             z-index: 1000;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 1.25rem 0.75rem;
+            box-sizing: border-box;
         }
 
         .sidebar::-webkit-scrollbar { width: 4px; }
@@ -159,13 +161,21 @@
             align-items: center;
             position: relative;
             overflow: hidden;
+
+            /* Không cho chữ tự xuống dòng */
+            white-space: nowrap;
+
+            /* Không vượt quá chiều rộng sidebar */
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .sidebar .nav-link i {
             font-size: 1.1rem;
-            width: 24px;
+            width: 28px;
+            min-width: 28px;
             text-align: center;
-            margin-right: 0.6rem;
+            margin-right: 0.65rem;
             flex-shrink: 0;
         }
 
@@ -634,9 +644,9 @@
             </li>
             <!-- Đã bổ sung: Đơn Vị Tính -->
             <li class="nav-item">
-                <a class="nav-link {% if 'don_vi_tinh' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'don_vi_tinh_list' %}">
-                    <i class="bi bi-balance me-2"></i>Đơn Vị Tính
-                </a>
+              <a class="nav-link {% if 'don_vi_tinh' in request.resolver_match.url_name %}active{% endif %}"
+                href="{% url 'don_vi_tinh_list' %}"><i class="bi bi-rulers me-2"></i>Đơn Vị Tính
+              </a>
             </li>
             <!-- Đã bổ sung: Nhà Cung Cấp -->
             <li class="nav-item">
