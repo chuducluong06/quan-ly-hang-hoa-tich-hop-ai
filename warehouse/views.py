@@ -1,4 +1,5 @@
 import csv
+import json
 import time
 from decimal import Decimal, InvalidOperation
 from functools import wraps
@@ -397,7 +398,7 @@ def dashboard_view(request):
     hang_sap_het = (
         HangHoa.objects
         .filter(
-            so_luong_ton__lt=F(
+            so_luong_ton__lte=F(
                 'ton_toi_thieu'
             )
         )
@@ -443,10 +444,14 @@ def dashboard_view(request):
         for item in top_5_hang
     ]
 
+    chart_labels_json = json.dumps(chart_labels, ensure_ascii=False)
+    chart_data_json = json.dumps(chart_data)
+    min_stock_data_json = json.dumps(min_stock_data)
+
     ds_can_nhap = (
         HangHoa.objects
         .filter(
-            so_luong_ton__lt=F(
+            so_luong_ton__lte=F(
                 'ton_toi_thieu'
             )
         )
@@ -466,6 +471,9 @@ def dashboard_view(request):
         'chart_labels': chart_labels,
         'chart_data': chart_data,
         'min_stock_data': min_stock_data,
+        'chart_labels_json': chart_labels_json,
+        'chart_data_json': chart_data_json,
+        'min_stock_data_json': min_stock_data_json,
         'ds_can_nhap': ds_can_nhap,
     }
 
@@ -473,6 +481,65 @@ def dashboard_view(request):
         request,
         'warehouse/dashboard.html',
         context
+    )
+
+
+# =========================================================
+# TÌM KIẾM TOÀN CỤC
+# =========================================================
+
+@login_required_custom
+def global_search_view(request):
+    query = request.GET.get('q', '').strip()
+    products = HangHoa.objects.none()
+    suppliers = NhaCungCap.objects.none()
+    vouchers = PhieuKho.objects.none()
+
+    if query:
+        products = (
+            HangHoa.objects
+            .filter(
+                Q(ma_hang__icontains=query)
+                | Q(ten_hang__icontains=query)
+            )
+            .order_by('ten_hang')[:8]
+        )
+        suppliers = (
+            NhaCungCap.objects
+            .filter(
+                Q(ma_ncc__icontains=query)
+                | Q(ten_ncc__icontains=query)
+                | Q(so_dien_thoai__icontains=query)
+                | Q(email__icontains=query)
+            )
+            .order_by('ten_ncc')[:8]
+        )
+        vouchers = (
+            PhieuKho.objects
+            .filter(
+                Q(ma_phieu__icontains=query)
+                | Q(ghi_chu__icontains=query)
+                | Q(nha_cung_cap__ten_ncc__icontains=query)
+                | Q(chi_tiet__hang_hoa__ma_hang__icontains=query)
+                | Q(chi_tiet__hang_hoa__ten_hang__icontains=query)
+            )
+            .select_related('nha_cung_cap')
+            .distinct()
+            .order_by('-ngay_lap')[:8]
+        )
+
+    return render(
+        request,
+        'warehouse/global_search_results.html',
+        {
+            'username': request.session.get('username'),
+            'role': request.session.get('role'),
+            'query': query,
+            'products': products,
+            'suppliers': suppliers,
+            'vouchers': vouchers,
+            'has_results': bool(products or suppliers or vouchers),
+        },
     )
 
 
@@ -1520,6 +1587,7 @@ def phieu_nhap_create_view(request):
 
     danh_sach_hang = (
         HangHoa.objects
+        .prefetch_related('nha_cung_caps')
         .all()
         .order_by('ten_hang')
     )
@@ -2186,6 +2254,7 @@ def nhom_hang_list_view(request):
     'THUKHO',
     'ADMIN'
 ])
+@transaction.atomic
 def nhom_hang_form_view(
     request,
     pk=None
@@ -2213,6 +2282,29 @@ def nhom_hang_form_view(
             'mo_ta',
             ''
         ).strip()
+        raw_product_ids = request.POST.getlist('hang_hoa_ids')
+        try:
+            product_ids = {int(product_id) for product_id in raw_product_ids}
+        except ValueError:
+            messages.error(
+                request,
+                "Danh sách sản phẩm không hợp lệ!"
+            )
+            return redirect(
+                'nhom_hang_edit',
+                pk=pk
+            ) if is_edit else redirect('nhom_hang_add')
+
+        selected_products = HangHoa.objects.filter(pk__in=product_ids)
+        if selected_products.count() != len(product_ids):
+            messages.error(
+                request,
+                "Một hoặc nhiều sản phẩm không còn tồn tại!"
+            )
+            return redirect(
+                'nhom_hang_edit',
+                pk=pk
+            ) if is_edit else redirect('nhom_hang_add')
 
         if not ten_nhom:
 
@@ -2266,21 +2358,29 @@ def nhom_hang_form_view(
 
             nhom_hang.save()
 
+            HangHoa.objects.filter(
+                nhom_hang=nhom_hang
+            ).exclude(
+                pk__in=product_ids
+            ).update(nhom_hang=None)
+            selected_products.update(nhom_hang=nhom_hang)
+
             messages.success(
                 request,
-                "Cập nhật nhóm hàng thành công!"
+                "Cập nhật nhóm hàng và sản phẩm thành công!"
             )
 
         else:
 
-            NhomHang.objects.create(
+            nhom_hang = NhomHang.objects.create(
                 ten_nhom=ten_nhom,
                 mo_ta=mo_ta
             )
+            selected_products.update(nhom_hang=nhom_hang)
 
             messages.success(
                 request,
-                "Thêm nhóm hàng mới thành công!"
+                "Thêm nhóm hàng và sản phẩm thành công!"
             )
 
         return redirect(
@@ -2296,6 +2396,16 @@ def nhom_hang_form_view(
         ),
         'is_edit': is_edit,
         'nhom_hang': nhom_hang,
+        'danh_sach_san_pham': HangHoa.objects.select_related(
+            'nhom_hang'
+        ).order_by('ma_hang'),
+        'selected_product_ids': (
+            set(
+                nhom_hang.hanghoa_set.values_list('pk', flat=True)
+            )
+            if is_edit
+            else set()
+        ),
     }
 
     return render(
@@ -2473,6 +2583,7 @@ def nha_cung_cap_list_view(request):
     danh_sach = (
         NhaCungCap.objects
         .all()
+        .prefetch_related('hang_hoa')
         .order_by('-id')
     )
 
@@ -2517,8 +2628,25 @@ def nha_cung_cap_form_view(request, pk=None):
         so_dien_thoai = request.POST.get('so_dien_thoai', '').strip()
         email = request.POST.get('email', '').strip()
         dia_chi = request.POST.get('dia_chi', '').strip()
+        raw_product_ids = request.POST.getlist('hang_hoa_ids')
+        invalid_product_ids = False
 
-        if not ma_ncc:
+        try:
+            selected_product_ids = {
+                int(product_id)
+                for product_id in raw_product_ids
+            }
+        except ValueError:
+            selected_product_ids = set()
+            invalid_product_ids = True
+
+        if invalid_product_ids:
+            messages.error(
+                request,
+                'Danh sách mã hàng không hợp lệ!'
+            )
+
+        elif not ma_ncc:
             messages.error(
                 request,
                 'Vui lòng nhập mã nhà cung cấp!'
@@ -2550,52 +2678,64 @@ def nha_cung_cap_form_view(request, pk=None):
                 )
 
             else:
+                selected_products = HangHoa.objects.filter(
+                    pk__in=selected_product_ids
+                )
 
-                try:
-
-                    if instance is None:
-
-                        # THÊM
-                        NhaCungCap.objects.create(
-                            ma_ncc=ma_ncc,
-                            ten_ncc=ten_ncc,
-                            so_dien_thoai=so_dien_thoai or None,
-                            email=email or None,
-                            dia_chi=dia_chi or None
-                        )
-
-                        messages.success(
-                            request,
-                            f'Đã thêm nhà cung cấp "{ten_ncc}" thành công!'
-                        )
-
-                    else:
-
-                        # SỬA
-                        instance.ma_ncc = ma_ncc
-                        instance.ten_ncc = ten_ncc
-                        instance.so_dien_thoai = (
-                            so_dien_thoai or None
-                        )
-                        instance.email = email or None
-                        instance.dia_chi = dia_chi or None
-
-                        instance.save()
-
-                        messages.success(
-                            request,
-                            f'Đã cập nhật nhà cung cấp "{ten_ncc}" thành công!'
-                        )
-
-                    return redirect('nha_cung_cap_list')
-
-                except IntegrityError:
-
+                if selected_products.count() != len(selected_product_ids):
                     messages.error(
                         request,
-                        'Không thể lưu nhà cung cấp. '
-                        'Mã nhà cung cấp có thể đã tồn tại!'
+                        'Một hoặc nhiều mã hàng không còn tồn tại. '
+                        'Vui lòng tải lại biểu mẫu!'
                     )
+                else:
+                    try:
+                        with transaction.atomic():
+                            if instance is None:
+                                instance = NhaCungCap.objects.create(
+                                    ma_ncc=ma_ncc,
+                                    ten_ncc=ten_ncc,
+                                    so_dien_thoai=so_dien_thoai or None,
+                                    email=email or None,
+                                    dia_chi=dia_chi or None
+                                )
+                            else:
+                                instance.ma_ncc = ma_ncc
+                                instance.ten_ncc = ten_ncc
+                                instance.so_dien_thoai = so_dien_thoai or None
+                                instance.email = email or None
+                                instance.dia_chi = dia_chi or None
+                                instance.save()
+
+                            instance.hang_hoa.set(selected_products)
+
+                        action = 'cập nhật' if pk else 'thêm'
+                        messages.success(
+                            request,
+                            f'Đã {action} nhà cung cấp "{ten_ncc}" '
+                            'và danh sách mã hàng thành công!'
+                        )
+                        return redirect('nha_cung_cap_list')
+                    except IntegrityError:
+                        messages.error(
+                            request,
+                            'Không thể lưu nhà cung cấp. '
+                            'Mã nhà cung cấp có thể đã tồn tại!'
+                        )
+
+    if request.method == 'POST':
+        try:
+            selected_hang_hoa_ids = {
+                int(product_id)
+                for product_id in request.POST.getlist('hang_hoa_ids')
+            }
+        except ValueError:
+            selected_hang_hoa_ids = set()
+    else:
+        selected_hang_hoa_ids = (
+            set(instance.hang_hoa.values_list('pk', flat=True))
+            if instance else set()
+        )
 
     context = {
         'username': request.session.get('username'),
@@ -2604,6 +2744,8 @@ def nha_cung_cap_form_view(request, pk=None):
         'is_edit': instance is not None,
 
         'nha_cc': instance,
+        'danh_sach_hang_hoa': HangHoa.objects.order_by('ma_hang'),
+        'selected_hang_hoa_ids': selected_hang_hoa_ids,
 
         'form_data': {
             'ma_ncc': request.POST.get(
@@ -2835,11 +2977,13 @@ def quan_ly_tai_khoan_view(request):
     # DANH SÁCH TÀI KHOẢN
     # -----------------------------------------------------
 
-    users = (
-        NguoiDung.objects
-        .all()
-        .order_by('-id')
-    )
+    search_query = request.GET.get('q', '').strip()
+    users = NguoiDung.objects.all()
+    if search_query:
+        users = users.filter(
+            ten_dang_nhap__icontains=search_query
+        )
+    users = users.order_by('-id')
 
     context = {
         'username': request.session.get(
@@ -2849,6 +2993,7 @@ def quan_ly_tai_khoan_view(request):
             'role'
         ),
         'users': users,
+        'search_query': search_query,
     }
 
     return render(
@@ -3102,7 +3247,65 @@ def doi_trang_thai_user_view(
 
 
 # =========================================================
-# 23. XÓA TÀI KHOẢN
+# 23. CẤP LẠI MẬT KHẨU
+# =========================================================
+
+@role_required(['ADMIN'])
+def admin_reset_user_password(request, user_id):
+    if request.method != 'POST':
+        messages.error(request, "Thao tác không hợp lệ!")
+        return redirect('quan_ly_tai_khoan')
+
+    current_admin = get_current_user_obj(request)
+    target_user = get_object_or_404(NguoiDung, id=user_id)
+
+    if current_admin and target_user.id == current_admin.id:
+        messages.error(request, "Bạn không thể cấp lại mật khẩu cho tài khoản đang đăng nhập!")
+        return redirect('quan_ly_tai_khoan')
+
+    if (
+        str(target_user.role).upper() == 'ADMIN'
+        or target_user.ten_dang_nhap.lower() == 'admin'
+    ):
+        messages.error(
+            request,
+            "Không thể cấp lại mật khẩu cho tài khoản Quản trị viên tối cao!"
+        )
+        return redirect('quan_ly_tai_khoan')
+
+    new_password = request.POST.get('mat_khau_moi', '')
+    confirm_password = request.POST.get('xac_nhan_mat_khau', '')
+
+    if len(new_password) < 6:
+        messages.error(request, "Mật khẩu mới phải có ít nhất 6 ký tự!")
+        return redirect('quan_ly_tai_khoan')
+
+    if new_password != confirm_password:
+        messages.error(request, "Mật khẩu xác nhận không khớp!")
+        return redirect('quan_ly_tai_khoan')
+
+    target_user.password_hash = make_password(new_password)
+    target_user.save(update_fields=['password_hash'])
+
+    if current_admin:
+        NhatKyHoatDong.objects.create(
+            nguoi_dung=current_admin,
+            hanh_dong="Cấp lại mật khẩu tài khoản",
+            chi_tiet=f"Đã cấp lại mật khẩu cho tài khoản: {target_user.ten_dang_nhap}"
+        )
+
+    messages.success(
+        request,
+        (
+            f"Đã cấp lại mật khẩu cho tài khoản "
+            f"'{target_user.ten_dang_nhap}' thành công!"
+        )
+    )
+    return redirect('quan_ly_tai_khoan')
+
+
+# =========================================================
+# 24. XÓA TÀI KHOẢN
 # =========================================================
 
 @role_required(['ADMIN'])
@@ -3205,7 +3408,7 @@ def admin_delete_user(
 
 
 # =========================================================
-# 24. NHẬT KÝ HOẠT ĐỘNG
+# 25. NHẬT KÝ HOẠT ĐỘNG
 # =========================================================
 
 @role_required(['ADMIN'])
@@ -3254,7 +3457,7 @@ def nhat_ky_hoat_dong_view(request):
 
 
 # =========================================================
-# 25. CÀI ĐẶT HỆ THỐNG
+# 26. CÀI ĐẶT HỆ THỐNG
 # =========================================================
 
 @role_required(['ADMIN'])
@@ -3601,4 +3804,3 @@ def don_vi_tinh_delete_view(
     return redirect(
         'don_vi_tinh_list'
     )
-

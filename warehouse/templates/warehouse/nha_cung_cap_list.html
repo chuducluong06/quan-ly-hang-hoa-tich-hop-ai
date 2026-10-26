@@ -237,6 +237,14 @@
                                 Tên nhà cung cấp
                             </th>
 
+                            <th style="
+                                background: var(--bg-secondary);
+                                color: var(--text-secondary);
+                                min-width: 220px;
+                            ">
+                                Mã hàng cung cấp
+                            </th>
+
 
                             <!-- SỐ ĐIỆN THOẠI -->
                             <th style="
@@ -312,6 +320,17 @@
 
                                 {{ ncc.ten_ncc }}
 
+                            </td>
+
+                            <td>
+                                {% for product in ncc.hang_hoa.all %}
+                                    <span class="badge bg-light text-primary border me-1 mb-1"
+                                          title="{{ product.ten_hang }}">
+                                        {{ product.ma_hang }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-muted">Chưa gán mã hàng</span>
+                                {% endfor %}
                             </td>
 
 
@@ -438,7 +457,7 @@
                         <!-- ================================================= -->
                         <tr>
 
-                            <td colspan="6"
+                            <td colspan="7"
                                 class="text-center py-5"
                                 style="color: var(--text-secondary);">
 

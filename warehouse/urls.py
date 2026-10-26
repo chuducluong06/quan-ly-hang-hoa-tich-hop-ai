@@ -27,6 +27,12 @@ urlpatterns = [
         name='logout'
     ),
 
+    path(
+        'tim-kiem/',
+        views.global_search_view,
+        name='global_search'
+    ),
+
 
     # =========================================================
     # 2. DASHBOARD
@@ -255,6 +261,13 @@ urlpatterns = [
         'quan-ly-tai-khoan/doi-trang-thai/<int:user_id>/',
         views.doi_trang_thai_user_view,
         name='doi_trang_thai_user'
+    ),
+
+    # Cấp lại mật khẩu
+    path(
+        'quan-ly-tai-khoan/cap-lai-mat-khau/<int:user_id>/',
+        views.admin_reset_user_password,
+        name='admin_reset_user_password'
     ),
 
     # Xóa tài khoản

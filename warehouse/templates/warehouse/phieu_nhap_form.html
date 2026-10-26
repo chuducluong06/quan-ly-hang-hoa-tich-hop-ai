@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -7,6 +8,7 @@
     <title>Tạo Phiếu Nhập Kho - Warehouse AI</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'warehouse/searchable-select.css' %}">
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -139,8 +141,9 @@
                     Vì vậy phải dùng SELECT thay vì INPUT TEXT.
                 -->
                 <select name="nha_cung_cap"
+                        id="supplierSelect"
                         required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg
+                        class="select-supplier w-full px-4 py-2 border border-gray-300 rounded-lg
                                bg-white
                                focus:ring-2 focus:ring-blue-500
                                focus:border-blue-500
@@ -285,6 +288,7 @@
                                 {% for hang in danh_sach_hang %}
 
                                     <option value="{{ hang.id }}"
+                                            data-suppliers="{% for supplier in hang.nha_cung_caps.all %}{{ supplier.pk }}{% if not forloop.last %},{% endif %}{% endfor %}"
                                             data-gia="{{ hang.gia_nhap|default:'0' }}">
 
                                         {{ hang.ma_hang }}
@@ -491,6 +495,30 @@
 ========================================================== -->
 <script>
 
+    function locSanPhamTheoNcc() {
+        const supplierId = document.getElementById('supplierSelect')?.value || '';
+
+        document.querySelectorAll('.select-hang').forEach(function (select) {
+            Array.from(select.options).forEach(function (option) {
+                if (!option.value || !supplierId) {
+                    option.hidden = false;
+                    return;
+                }
+
+                const supplierIds = (option.dataset.suppliers || '')
+                    .split(',')
+                    .filter(Boolean);
+                option.hidden = !supplierIds.includes(supplierId);
+            });
+
+            if (select.selectedOptions[0]?.hidden) {
+                select.value = '';
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            select.dispatchEvent(new Event('optionschanged'));
+        });
+    }
+
     /*
      * Tự động lấy giá nhập của sản phẩm
      */
@@ -556,6 +584,9 @@
         const newRow =
             firstRow.cloneNode(true);
 
+        if (window.resetClonedSearchableSelects) {
+            window.resetClonedSearchableSelects(newRow);
+        }
 
         const select =
             newRow.querySelector('.select-hang');
@@ -604,6 +635,10 @@
 
 
         container.appendChild(newRow);
+        if (window.initializeSearchableSelects) {
+            window.initializeSearchableSelects(newRow);
+        }
+        locSanPhamTheoNcc();
 
     }
 
@@ -669,6 +704,16 @@
                 return;
             }
 
+            const supplierSelect =
+                document.getElementById('supplierSelect');
+
+            if (supplierSelect) {
+                supplierSelect.addEventListener(
+                    'change',
+                    locSanPhamTheoNcc
+                );
+                locSanPhamTheoNcc();
+            }
 
             form.addEventListener(
                 'submit',
@@ -798,5 +843,7 @@
 
 </script>
 
+    <script src="{% static 'warehouse/searchable-select.js' %}"></script>
+    {% include 'warehouse/task_menu_assets.html' %}
 </body>
 </html>

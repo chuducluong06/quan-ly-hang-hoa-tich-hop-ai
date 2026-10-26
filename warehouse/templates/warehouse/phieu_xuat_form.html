@@ -1,9 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Tạo Phiếu Xuất Kho - Warehouse AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'warehouse/searchable-select.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50 p-6 md:p-8">
@@ -124,6 +126,9 @@
             if (!firstRow) return;
             
             const newRow = firstRow.cloneNode(true);
+            if (window.resetClonedSearchableSelects) {
+                window.resetClonedSearchableSelects(newRow);
+            }
             const select = newRow.querySelector('.select-hang');
             const sl = newRow.querySelector('.input-sl');
             const gia = newRow.querySelector('.input-gia');
@@ -133,6 +138,9 @@
             gia.value = 0;
             
             container.appendChild(newRow);
+            if (window.initializeSearchableSelects) {
+                window.initializeSearchableSelects(newRow);
+            }
         }
 
         function xoaDongHang(btn) {
@@ -153,5 +161,7 @@
             }
         });
     </script>
+    <script src="{% static 'warehouse/searchable-select.js' %}"></script>
+    {% include 'warehouse/task_menu_assets.html' %}
 </body>
 </html>

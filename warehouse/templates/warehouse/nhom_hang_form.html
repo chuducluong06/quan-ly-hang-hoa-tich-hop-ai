@@ -90,6 +90,39 @@
                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">{% if is_edit %}{{ nhom_hang.mo_ta|default:'' }}{% endif %}</textarea>
                     </div>
 
+                    <div>
+                        <label for="productSearch" class="block text-sm font-semibold text-gray-700 mb-1">
+                            Sản phẩm trong nhóm hàng
+                        </label>
+                        <p class="text-xs text-gray-500 mb-2">
+                            Chọn một hoặc nhiều sản phẩm. Sản phẩm đang thuộc nhóm khác sẽ được chuyển sang nhóm này.
+                        </p>
+                        <input id="productSearch"
+                               type="search"
+                               placeholder="Tìm theo mã hoặc tên sản phẩm..."
+                               class="w-full px-4 py-2 mb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                        <div id="productList" class="max-h-64 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
+                            {% for product in danh_sach_san_pham %}
+                                <label class="product-option flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer"
+                                       data-search="{{ product.ma_hang }} {{ product.ten_hang }}">
+                                    <input type="checkbox"
+                                           name="hang_hoa_ids"
+                                           value="{{ product.pk }}"
+                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                           {% if product.pk in selected_product_ids %}checked{% endif %}>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block text-sm font-medium text-gray-800">{{ product.ma_hang }} - {{ product.ten_hang }}</span>
+                                        {% if product.nhom_hang and product.nhom_hang_id != nhom_hang.pk %}
+                                            <span class="block text-xs text-amber-700">Đang thuộc nhóm: {{ product.nhom_hang.ten_nhom }}; chọn để chuyển nhóm</span>
+                                        {% endif %}
+                                    </span>
+                                </label>
+                            {% empty %}
+                                <p class="p-4 text-sm text-gray-500">Chưa có sản phẩm. Bạn có thể tạo sản phẩm trước rồi quay lại gán vào nhóm.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
                         <a href="{% url 'nhom_hang_list' %}" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm font-medium transition">Hủy</a>
                         <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow transition flex items-center">
@@ -100,5 +133,19 @@
             </div>
         </main>
     </div>
+    <script>
+        const productSearch = document.getElementById('productSearch');
+        const productOptions = document.querySelectorAll('.product-option');
+
+        productSearch?.addEventListener('input', function () {
+            const query = this.value.trim().toLocaleLowerCase('vi');
+            productOptions.forEach(function (option) {
+                option.hidden = !option.dataset.search
+                    .toLocaleLowerCase('vi')
+                    .includes(query);
+            });
+        });
+    </script>
+    {% include 'warehouse/task_menu_assets.html' %}
 </body>
 </html>

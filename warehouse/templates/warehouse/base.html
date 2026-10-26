@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="vi" data-theme="light">
 
@@ -13,6 +14,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'warehouse/task-menu.css' %}">
+    <link rel="stylesheet" href="{% static 'warehouse/admin-pages.css' %}">
 
     <style>
         /* ===== CSS CUSTOM PROPERTIES (DESIGN TOKENS) ===== */
@@ -586,6 +589,11 @@
 
 
 <body>
+    {% if 'don_vi_tinh' in request.resolver_match.url_name or 'nha_cung_cap' in request.resolver_match.url_name or 'quan_ly_tai_khoan' in request.resolver_match.url_name or 'nhat_ky_hoat_dong' in request.resolver_match.url_name or request.resolver_match.url_name == 'admin_settings' or request.resolver_match.url_name == 'global_search' %}
+        {% include 'warehouse/task_menu_assets.html' with task_menu_in_base=True %}
+    {% endif %}
+
+    {% if 'don_vi_tinh' not in request.resolver_match.url_name and 'nha_cung_cap' not in request.resolver_match.url_name and 'quan_ly_tai_khoan' not in request.resolver_match.url_name and 'nhat_ky_hoat_dong' not in request.resolver_match.url_name and request.resolver_match.url_name != 'admin_settings' and request.resolver_match.url_name != 'global_search' %}
     <!-- Mobile Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -677,18 +685,32 @@
                     <i class="bi bi-clock-history me-2"></i>Nhật Ký Hoạt Động
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link admin-link {% if request.resolver_match.url_name == 'admin_settings' %}active{% endif %}" href="{% url 'admin_settings' %}">
+                    <i class="bi bi-gear me-2"></i>Cài Đặt Hệ Thống
+                </a>
+            </li>
             {% endif %}
         </ul>
     </div>
+    {% endif %}
 
     <!-- Main Content Area -->
     <div class="main-content">
+        {% if 'don_vi_tinh' not in request.resolver_match.url_name and 'nha_cung_cap' not in request.resolver_match.url_name and 'quan_ly_tai_khoan' not in request.resolver_match.url_name and 'nhat_ky_hoat_dong' not in request.resolver_match.url_name and request.resolver_match.url_name != 'admin_settings' and request.resolver_match.url_name != 'global_search' %}
         <!-- Topbar -->
         <div class="topbar">
             <div class="topbar-date">
                 <i class="bi bi-calendar3"></i>
                 <span id="currentDate"></span>
             </div>
+
+            <form class="topbar-search" action="{% url 'global_search' %}" method="get" role="search">
+                <button type="submit" aria-label="Tìm kiếm">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                </button>
+                <input type="search" name="q" placeholder="Tìm kiếm hàng hóa, phiếu nhập, nhà cung cấp..." aria-label="Tìm kiếm hàng hóa, phiếu nhập hoặc nhà cung cấp" required>
+            </form>
 
             <div class="topbar-actions">
                 <!-- Theme Toggle Button -->
@@ -720,6 +742,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
 
         <!-- Django System Messages -->
         {% if messages %}
@@ -752,7 +775,7 @@
             // Apply saved theme instantly (no flash)
             html.setAttribute('data-theme', savedTheme);
 
-            toggleBtn.addEventListener('click', function() {
+            if (toggleBtn) toggleBtn.addEventListener('click', function() {
                 const current = html.getAttribute('data-theme');
                 const next = current === 'light' ? 'dark' : 'light';
                 html.setAttribute('data-theme', next);
@@ -768,7 +791,10 @@
             const dd = String(now.getDate()).padStart(2, '0');
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const yyyy = now.getFullYear();
-            document.getElementById('currentDate').textContent = `${dayName}, ${dd}/${mm}/${yyyy}`;
+            const currentDate = document.getElementById('currentDate');
+            if (currentDate) {
+                currentDate.textContent = `${dayName}, ${dd}/${mm}/${yyyy}`;
+            }
         })();
 
         // ===== MOBILE SIDEBAR TOGGLE =====
@@ -794,6 +820,7 @@
     </script>
 
     {% block extra_js %}{% endblock %}
+    <script src="{% static 'warehouse/task-menu.js' %}" defer></script>
 </body>
 
 </html>

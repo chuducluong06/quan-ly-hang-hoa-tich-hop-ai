@@ -1,0 +1,98 @@
+{% extends 'warehouse/base.html' %}
+{% block title %}Kết quả tìm kiếm - Quản Lý Kho AI{% endblock %}
+
+{% block content %}
+<section class="admin-page search-results-page" aria-labelledby="searchResultsTitle">
+    <header class="admin-page-header">
+        <div>
+            <h1 class="admin-page-title" id="searchResultsTitle">
+                <span class="admin-page-icon" aria-hidden="true">
+                    <i class="bi bi-search"></i>
+                </span>
+                Kết quả tìm kiếm
+            </h1>
+            {% if query %}
+                <p class="admin-page-description">Kết quả cho “{{ query }}”</p>
+            {% else %}
+                <p class="admin-page-description">Nhập từ khóa để tìm hàng hóa, phiếu kho hoặc nhà cung cấp.</p>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if query and not has_results %}
+        <div class="card admin-card">
+            <div class="card-body admin-card-body text-center py-5">
+                <i class="bi bi-search display-5 text-secondary" aria-hidden="true"></i>
+                <h2 class="h5 mt-3">Không tìm thấy kết quả</h2>
+                <p class="text-secondary mb-0">Thử tìm bằng mã hàng, tên sản phẩm, mã phiếu hoặc tên nhà cung cấp.</p>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if products %}
+        <section class="card admin-card mb-4" aria-labelledby="productResultsTitle">
+            <div class="card-header admin-card-heading">
+                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                <h2 id="productResultsTitle">Hàng hóa</h2>
+                <span class="badge text-bg-light ms-auto">{{ products|length }}</span>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for product in products %}
+                    <a class="list-group-item list-group-item-action search-result-row" href="{% url 'san_pham_list' %}?q={{ product.ma_hang|urlencode }}">
+                        <span class="search-result-icon"><i class="bi bi-box" aria-hidden="true"></i></span>
+                        <span class="search-result-copy">
+                            <strong>{{ product.ten_hang }}</strong>
+                            <small>{{ product.ma_hang }} · Tồn kho: {{ product.so_luong_ton }}</small>
+                        </span>
+                        <i class="bi bi-arrow-up-right search-result-arrow" aria-hidden="true"></i>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if vouchers %}
+        <section class="card admin-card mb-4" aria-labelledby="voucherResultsTitle">
+            <div class="card-header admin-card-heading">
+                <i class="bi bi-receipt" aria-hidden="true"></i>
+                <h2 id="voucherResultsTitle">Phiếu nhập / xuất</h2>
+                <span class="badge text-bg-light ms-auto">{{ vouchers|length }}</span>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for voucher in vouchers %}
+                    <a class="list-group-item list-group-item-action search-result-row" href="{% url 'phieu_detail' voucher.id %}">
+                        <span class="search-result-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span>
+                        <span class="search-result-copy">
+                            <strong>{{ voucher.ma_phieu }}</strong>
+                            <small>{{ voucher.get_loai_phieu_display }} · {{ voucher.ngay_lap|date:"d/m/Y H:i" }}{% if voucher.nha_cung_cap %} · {{ voucher.nha_cung_cap.ten_ncc }}{% endif %}</small>
+                        </span>
+                        <i class="bi bi-arrow-up-right search-result-arrow" aria-hidden="true"></i>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if suppliers %}
+        <section class="card admin-card mb-4" aria-labelledby="supplierResultsTitle">
+            <div class="card-header admin-card-heading">
+                <i class="bi bi-truck" aria-hidden="true"></i>
+                <h2 id="supplierResultsTitle">Nhà cung cấp</h2>
+                <span class="badge text-bg-light ms-auto">{{ suppliers|length }}</span>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for supplier in suppliers %}
+                    <a class="list-group-item list-group-item-action search-result-row" href="{% url 'nha_cung_cap_list' %}?keyword={{ supplier.ma_ncc|urlencode }}">
+                        <span class="search-result-icon"><i class="bi bi-building" aria-hidden="true"></i></span>
+                        <span class="search-result-copy">
+                            <strong>{{ supplier.ten_ncc }}</strong>
+                            <small>{{ supplier.ma_ncc }}{% if supplier.so_dien_thoai %} · {{ supplier.so_dien_thoai }}{% endif %}</small>
+                        </span>
+                        <i class="bi bi-arrow-up-right search-result-arrow" aria-hidden="true"></i>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</section>
+{% endblock %}

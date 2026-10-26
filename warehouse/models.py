@@ -116,6 +116,13 @@ class NhaCungCap(models.Model):
         verbose_name="Email"
     )
 
+    hang_hoa = models.ManyToManyField(
+        'HangHoa',
+        blank=True,
+        related_name='nha_cung_caps',
+        verbose_name="Mã hàng cung cấp"
+    )
+
     ngay_tao = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Ngày tạo"

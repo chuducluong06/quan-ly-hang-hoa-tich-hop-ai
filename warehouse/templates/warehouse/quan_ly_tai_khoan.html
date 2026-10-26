@@ -2,27 +2,30 @@
 {% block title %}Quản Lý Tài Khoản - Quản Lý Kho AI{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-0">
+<section class="admin-page" aria-labelledby="userManagementTitle">
     <!-- TIÊU ĐỀ TRANG -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <header class="admin-page-header">
         <div>
-            <h2 class="fw-bold fs-4 mb-1" style="color: var(--text-primary);">Quản Lý Tài Khoản Người Dùng</h2>
-            <p class="text-secondary fs-6 mb-0">Quản lý quyền truy cập và trạng thái kích hoạt tài khoản của nhân viên.</p>
+            <h1 class="admin-page-title" id="userManagementTitle">
+                <span class="admin-page-icon" aria-hidden="true">
+                    <i class="bi bi-people-fill"></i>
+                </span>
+                Quản lý tài khoản người dùng
+            </h1>
+            <p class="admin-page-description">Quản lý quyền truy cập và trạng thái kích hoạt tài khoản của nhân viên.</p>
         </div>
-        <div>
-            <a href="{% url 'nhat_ky_hoat_dong' %}" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2">
+        <a href="{% url 'nhat_ky_hoat_dong' %}" class="btn btn-outline-primary text-nowrap">
                 <i class="bi bi-clock-history"></i> Xem Nhật Ký Hoạt Động
-            </a>
-        </div>
-    </div>
+        </a>
+    </header>
 
     <!-- FORM THÊM TÀI KHOẢN MỚI -->
-    <div class="card border-0 mb-4 shadow-sm">
-        <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center gap-2">
-            <i class="bi bi-person-plus-fill fs-5 text-primary"></i>
-            <h5 class="card-title fw-bold fs-6 mb-0" style="color: var(--text-primary);">Thêm Tài Khoản Mới</h5>
+    <section class="card admin-card mb-4" aria-labelledby="addUserTitle">
+        <div class="card-header admin-card-heading">
+            <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+            <h2 id="addUserTitle">Thêm tài khoản mới</h2>
         </div>
-        <div class="card-body">
+        <div class="card-body admin-card-body">
             <form method="POST" action="{% url 'quan_ly_tai_khoan' %}">
                 {% csrf_token %}
                 <div class="row g-3 align-items-end">
@@ -49,16 +52,38 @@
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 
     <!-- BẢNG DANH SÁCH TÀI KHOẢN -->
-    <div class="card border-0 shadow-sm overflow-hidden">
-        <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center gap-2">
-            <i class="bi bi-list-ul fs-5 text-primary"></i>
-            <h5 class="card-title fw-bold fs-6 mb-0" style="color: var(--text-primary);">Danh Sách Tài Khoản ({{ users|length }})</h5>
+    <section class="card admin-card" aria-labelledby="userListTitle">
+        <div class="card-header admin-card-heading">
+            <i class="bi bi-list-ul" aria-hidden="true"></i>
+            <h2 id="userListTitle">Danh sách tài khoản ({{ users|length }})</h2>
+            <form method="GET" action="{% url 'quan_ly_tai_khoan' %}" class="admin-user-search ms-auto">
+                <label for="accountSearch" class="visually-hidden">Tìm theo tên đăng nhập</label>
+                <div class="input-group">
+                    <input
+                        type="search"
+                        id="accountSearch"
+                        name="q"
+                        class="form-control"
+                        value="{{ search_query }}"
+                        placeholder="Tìm tên đăng nhập..."
+                        aria-label="Tìm theo tên đăng nhập">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>
+                        Tìm kiếm
+                    </button>
+                    {% if search_query %}
+                        <a href="{% url 'quan_ly_tai_khoan' %}" class="btn btn-outline-secondary" aria-label="Xóa tìm kiếm" title="Xóa tìm kiếm">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle admin-table admin-user-table">
                 <thead>
                     <tr>
                         <th class="ps-4">Tài khoản</th>
@@ -73,7 +98,7 @@
                         <!-- Tên tài khoản -->
                         <td class="ps-4">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="user-avatar flex-shrink-0" style="width: 36px; height: 36px; font-size: 0.85rem; border-radius: 10px;">
+                                <div class="user-avatar admin-user-avatar flex-shrink-0">
                                     {{ u.ten_dang_nhap|first|upper }}
                                 </div>
                                 <div>
@@ -116,20 +141,38 @@
                         </td>
 
                         <!-- Thao tác -->
-                        <td class="text-end pe-4">
+                        <td class="pe-4 admin-user-actions">
                             {% if u.role != 'ADMIN' %}
-                                <form action="{% url 'doi_trang_thai_user' u.id %}" method="POST" class="d-inline-block">
-                                    {% csrf_token %}
-                                    {% if u.is_active %}
-                                        <button type="submit" class="btn btn-outline-danger btn-sm px-3" onclick="return confirm('Bạn có chắc chắn muốn khóa tài khoản {{ u.ten_dang_nhap }}?');">
-                                            <i class="bi bi-lock-fill me-1"></i> Khóa
+                                <div class="admin-user-action-stack">
+                                    <form action="{% url 'admin_reset_user_password' u.id %}" method="POST" class="admin-password-reset-form">
+                                        {% csrf_token %}
+                                        <input type="password" name="mat_khau_moi" class="form-control" placeholder="Mật khẩu mới" minlength="6" autocomplete="new-password" required aria-label="Mật khẩu mới cho {{ u.ten_dang_nhap }}">
+                                        <input type="password" name="xac_nhan_mat_khau" class="form-control" placeholder="Xác nhận mật khẩu" minlength="6" autocomplete="new-password" required aria-label="Xác nhận mật khẩu mới cho {{ u.ten_dang_nhap }}">
+                                        <button type="submit" class="btn btn-outline-primary text-nowrap">
+                                            <i class="bi bi-key-fill me-1"></i> Cấp lại mật khẩu
                                         </button>
-                                    {% else %}
-                                        <button type="submit" class="btn btn-outline-success btn-sm px-3">
-                                            <i class="bi bi-unlock-fill me-1"></i> Mở khóa
-                                        </button>
-                                    {% endif %}
-                                </form>
+                                    </form>
+                                    <div class="admin-account-actions">
+                                        <form action="{% url 'doi_trang_thai_user' u.id %}" method="POST">
+                                            {% csrf_token %}
+                                            {% if u.is_active %}
+                                                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn khóa tài khoản {{ u.ten_dang_nhap }}?');">
+                                                    <i class="bi bi-lock-fill me-1"></i> Khóa tài khoản
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-outline-success">
+                                                    <i class="bi bi-unlock-fill me-1"></i> Mở khóa
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                        <form action="{% url 'admin_delete_user' u.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản {{ u.ten_dang_nhap }}? Thao tác này không thể hoàn tác.');">
+                                                <i class="bi bi-trash-fill me-1"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             {% else %}
                                 <span class="text-secondary fst-italic fs-7">
                                     <i class="bi bi-shield-lock text-primary me-1"></i> Bảo vệ
@@ -148,6 +191,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
-</div>
+    </section>
+</section>
 {% endblock %}

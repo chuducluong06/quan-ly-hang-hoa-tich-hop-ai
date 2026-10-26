@@ -257,6 +257,44 @@
 
                 </div>
 
+                <div class="mb-4">
+                    <label for="productSearch" class="form-label fw-semibold">
+                        Mã hàng nhà cung cấp
+                    </label>
+                    <p class="form-text mt-0">
+                        Chọn các mặt hàng mà nhà cung cấp này cung cấp. Có thể tìm theo mã hoặc tên.
+                    </p>
+                    <input type="search"
+                           class="form-control mb-2"
+                           id="productSearch"
+                           placeholder="Tìm mã hàng hoặc tên sản phẩm...">
+                    <div class="border rounded p-2"
+                         id="supplierProductList"
+                         style="max-height: 320px; overflow-y: auto;">
+                        {% for product in danh_sach_hang_hoa %}
+                            <label class="d-flex align-items-center gap-2 p-2 border-bottom supplier-product-option"
+                                   data-search="{{ product.ma_hang }} {{ product.ten_hang }}">
+                                <input type="checkbox"
+                                       class="form-check-input mt-0"
+                                       name="hang_hoa_ids"
+                                       value="{{ product.pk }}"
+                                       {% if product.pk in selected_hang_hoa_ids %}checked{% endif %}>
+                                <span>
+                                    <strong>{{ product.ma_hang }}</strong>
+                                    <span class="text-muted">— {{ product.ten_hang }}</span>
+                                </span>
+                            </label>
+                        {% empty %}
+                            <p class="text-muted text-center mb-0 p-3">
+                                Chưa có hàng hóa. Hãy thêm sản phẩm trước khi gán cho nhà cung cấp.
+                            </p>
+                        {% endfor %}
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        Hàng mẫu được thêm với tồn kho và giá bằng 0; hãy cập nhật thông tin thực tế trước khi giao dịch.
+                    </small>
+                </div>
+
 
                 <!-- ====================================
                      THÔNG BÁO ĐANG SỬA
@@ -319,5 +357,17 @@
     </div>
 
 </div>
+
+<script>
+    const productSearch = document.getElementById('productSearch');
+    const productOptions = document.querySelectorAll('.supplier-product-option');
+
+    productSearch?.addEventListener('input', () => {
+        const keyword = productSearch.value.trim().toLocaleLowerCase('vi');
+        productOptions.forEach((option) => {
+            option.hidden = !option.dataset.search.toLocaleLowerCase('vi').includes(keyword);
+        });
+    });
+</script>
 
 {% endblock %}

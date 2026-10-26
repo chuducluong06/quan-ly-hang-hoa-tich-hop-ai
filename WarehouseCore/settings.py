@@ -133,3 +133,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # --- CẤU HÌNH API KEY GEMINI ---
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 # --------------------------------
+
+# Tài khoản quản trị được khởi tạo bằng lệnh `create_admin_from_env`.
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', '').strip()
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '')

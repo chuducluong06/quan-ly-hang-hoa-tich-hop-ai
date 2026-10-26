@@ -5,6 +5,9 @@ env/
 # Database SQLite cục bộ
 db.sqlite3
 
+# Thông tin cấu hình và bí mật cục bộ
+.env
+
 # Các file cache của Python
 __pycache__/
 *.pyc

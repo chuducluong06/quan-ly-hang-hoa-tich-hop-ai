@@ -1,61 +1,72 @@
 {% extends 'warehouse/base.html' %}
+{% block title %}Cài Đặt Hệ Thống - Quản Lý Kho AI{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="mb-4">
-        <h2><i class="bi bi-gear-fill"></i> Cấu Hình Hệ Thống</h2>
-        <p class="text-muted">Tùy chỉnh các tham số toàn cục và kết nối API Trợ lý AI.</p>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white fw-bold">
-                    <i class="bi bi-sliders"></i> Thiết Lập Tham Số
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{% url 'admin_settings' %}">
-                        {% csrf_token %}
-                        
-                        <!-- AI API Key -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="bi bi-cpu text-primary"></i> Gemini API Key (Trợ lý AI Kho)
-                            </label>
-                            <input type="password" 
-                                   name="gemini_api_key" 
-                                   class="form-control" 
-                                   value="{{ gemini_api_key }}" 
-                                   placeholder="AIzaSy...">
-                            <div class="form-text">Mã API dùng để kích hoạt tính năng dự báo tồn kho và gợi ý tự động.</div>
-                        </div>
-
-                        <hr>
-
-                        <!-- Stock Threshold Default -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="bi bi-box-seam text-warning"></i> Ngưỡng Tồn Kho Tối Thiểu Mặc Định
-                            </label>
-                            <input type="number" 
-                                   name="default_min_stock" 
-                                   class="form-control" 
-                                   value="{{ default_min_stock }}" 
-                                   min="1" 
-                                   required>
-                            <div class="form-text">Số lượng gán mặc định cho các sản phẩm mới khi không nhập ngưỡng tồn.</div>
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Hủy</a>
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-save"></i> Lưu Cấu Hình
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<section class="admin-page admin-settings-page" aria-labelledby="settingsTitle">
+    <header class="admin-page-header">
+        <div>
+            <h1 class="admin-page-title" id="settingsTitle">
+                <span class="admin-page-icon" aria-hidden="true">
+                    <i class="bi bi-gear-fill"></i>
+                </span>
+                Cấu hình hệ thống
+            </h1>
+            <p class="admin-page-description">
+                Tùy chỉnh các tham số toàn cục và kết nối API Trợ lý AI.
+            </p>
         </div>
-    </div>
-</div>
+    </header>
+
+    <section class="card admin-card" aria-labelledby="settingsCardTitle">
+        <div class="card-header admin-card-heading">
+            <i class="bi bi-sliders" aria-hidden="true"></i>
+            <h2 id="settingsCardTitle">Thiết lập tham số</h2>
+        </div>
+        <div class="card-body admin-card-body">
+            <form method="POST" action="{% url 'admin_settings' %}">
+                {% csrf_token %}
+
+                <div class="admin-settings-field mb-4">
+                    <label for="geminiApiKey" class="form-label fw-bold">
+                        <i class="bi bi-cpu text-primary me-1" aria-hidden="true"></i>
+                        Gemini API Key (Trợ lý AI Kho)
+                    </label>
+                    <input id="geminiApiKey"
+                           type="password"
+                           name="gemini_api_key"
+                           class="form-control"
+                           value="{{ gemini_api_key }}"
+                           placeholder="AIzaSy...">
+                    <div class="form-text mt-2">
+                        Mã API dùng để kích hoạt tính năng dự báo tồn kho và gợi ý tự động.
+                    </div>
+                </div>
+
+                <div class="admin-settings-field mb-4">
+                    <label for="defaultMinStock" class="form-label fw-bold">
+                        <i class="bi bi-box-seam text-warning me-1" aria-hidden="true"></i>
+                        Ngưỡng tồn kho tối thiểu mặc định
+                    </label>
+                    <input id="defaultMinStock"
+                           type="number"
+                           name="default_min_stock"
+                           class="form-control"
+                           value="{{ default_min_stock }}"
+                           min="1"
+                           required>
+                    <div class="form-text mt-2">
+                        Số lượng gán mặc định cho sản phẩm mới khi không nhập ngưỡng tồn.
+                    </div>
+                </div>
+
+                <div class="admin-page-actions">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-save me-1" aria-hidden="true"></i> Lưu cấu hình
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</section>
 {% endblock %}

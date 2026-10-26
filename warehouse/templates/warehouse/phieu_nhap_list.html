@@ -285,6 +285,10 @@
                                 Tổng tiền
                             </th>
 
+                            <th class="py-4 px-6 font-semibold text-center">
+                                Thao tác
+                            </th>
+
                         </tr>
 
                     </thead>
@@ -369,6 +373,15 @@
 
                                 </td>
 
+                                <td class="py-4 px-6 text-center">
+                                    <a href="{% url 'phieu_detail' phieu.id %}"
+                                       class="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 font-medium text-blue-700 hover:bg-blue-100"
+                                       aria-label="Xem chi tiết phiếu {{ phieu.ma_phieu }}">
+                                        <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                                        <span>Chi tiết</span>
+                                    </a>
+                                </td>
+
 
                             </tr>
 
@@ -379,7 +392,7 @@
                             <tr>
 
                                 <td
-                                    colspan="5"
+                                    colspan="6"
                                     class="text-center py-10 text-gray-400"
                                 >
 
@@ -415,6 +428,6 @@
 
     </div>
 
-
+    {% include 'warehouse/task_menu_assets.html' %}
 </body>
 </html>

@@ -3,51 +3,398 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Đăng Nhập - Quản Lý Kho AI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7ff">
+    <title>Đăng nhập - Quản lý kho AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #f4f6f9;
-            color: #333333;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        :root {
+            color-scheme: light;
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .card {
-            background-color: #ffffff;
-            border-color: #e3e6f0;
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            min-height: 100svh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            overflow-x: hidden;
+            padding: 32px 20px;
+            color: #24324b;
+            background:
+                radial-gradient(ellipse at 50% 52%, rgba(221, 232, 255, 0.48), transparent 52%),
+                linear-gradient(135deg, #f8faff 0%, #f1f5ff 52%, #f8f8ff 100%);
+        }
+
+        .decoration {
+            position: fixed;
+            z-index: -1;
+            pointer-events: none;
+            border-radius: 50%;
+        }
+
+        .decoration-top {
+            top: -310px;
+            left: -270px;
+            width: 590px;
+            height: 590px;
+            background: linear-gradient(145deg, rgba(77, 161, 255, 0.24), rgba(80, 165, 255, 0.06));
+        }
+
+        .decoration-top::after,
+        .decoration-bottom::after {
+            position: absolute;
+            content: "";
+            inset: 26px;
+            border: 1px solid rgba(73, 147, 255, 0.22);
+            border-radius: inherit;
+        }
+
+        .decoration-bottom {
+            right: -350px;
+            bottom: -360px;
+            width: 700px;
+            height: 700px;
+            background: linear-gradient(145deg, rgba(153, 105, 255, 0.18), rgba(121, 141, 255, 0.07));
+        }
+
+        .decoration-bottom::after {
+            border-color: rgba(151, 109, 255, 0.2);
+            inset: -24px;
+        }
+
+        .sparkle {
+            position: fixed;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: rgba(79, 145, 255, 0.12);
+            transform: rotate(12deg);
+        }
+
+        .sparkle-one {
+            top: 26%;
+            left: 14.5%;
+        }
+
+        .sparkle-two {
+            top: 23%;
+            right: 15.5%;
+            background: rgba(150, 104, 255, 0.15);
+            transform: rotate(12deg) scale(1.2);
+        }
+
+        .login-card {
+            width: min(100%, 526px);
+            padding: 35px 38px 40px;
+            border: 1px solid rgba(255, 255, 255, 0.92);
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 24px 70px rgba(59, 93, 158, 0.12);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .brand-mark {
+            position: relative;
+            width: 94px;
+            height: 86px;
+            margin: 0 auto 12px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 43px;
+            filter: drop-shadow(0 12px 14px rgba(38, 111, 255, 0.2));
+        }
+
+        .brand-mark::before {
+            position: absolute;
+            z-index: -1;
+            content: "";
+            width: 72px;
+            height: 66px;
+            border-radius: 24px;
+            background: linear-gradient(145deg, #36c0ff 0%, #176dff 55%, #7556ef 100%);
+            transform: rotate(-9deg);
+        }
+
+        .brand-ai {
+            position: absolute;
+            right: -12px;
+            bottom: 5px;
+            padding: 4px 7px;
+            border: 2px solid #fff;
+            border-radius: 9px;
+            color: #fff;
+            background: linear-gradient(135deg, #a855f7, #7146e8);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            filter: none;
+        }
+
+        h1 {
+            margin: 0;
+            text-align: center;
+            color: #2268ef;
+            background: linear-gradient(100deg, #087bfa 8%, #4c52ee 58%, #a23be6 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: clamp(24px, 5vw, 34px);
+            font-weight: 800;
+            letter-spacing: -0.045em;
+        }
+
+        .subtitle {
+            margin: 8px 0 31px;
+            color: #8995aa;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .form-field {
+            margin-bottom: 19px;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #344158;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap > i {
+            position: absolute;
+            top: 50%;
+            left: 16px;
+            color: #91a0b9;
+            font-size: 17px;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .input-wrap input {
             width: 100%;
-            max-width: 400px;
+            height: 49px;
+            padding: 0 46px;
+            border: 1px solid #dce4f0;
+            border-radius: 11px;
+            outline: none;
+            color: #263650;
+            background: rgba(255, 255, 255, 0.84);
+            font: inherit;
+            font-size: 14px;
+            transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+
+        .input-wrap input::placeholder {
+            color: #9aa6ba;
+        }
+
+        .input-wrap input:focus {
+            border-color: #5685ff;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(57, 115, 255, 0.12);
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 13px;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 0;
+            color: #91a0b9;
+            background: transparent;
+            cursor: pointer;
+            transform: translateY(-50%);
+        }
+
+        .password-toggle:hover,
+        .password-toggle:focus-visible {
+            color: #4b68e8;
+        }
+
+        .password-toggle:focus-visible,
+        .submit-button:focus-visible {
+            outline: 3px solid rgba(57, 115, 255, 0.35);
+            outline-offset: 3px;
+        }
+
+        .form-error {
+            margin-bottom: 18px;
+            padding: 11px 13px;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            color: #b42332;
+            background: #fff2f2;
+            font-size: 13px;
+        }
+
+        .submit-button {
+            width: 100%;
+            min-height: 51px;
+            margin-top: 5px;
+            border: 0;
+            border-radius: 11px;
+            color: #fff;
+            background: linear-gradient(100deg, #087bfa 0%, #4158ee 55%, #a03be8 100%);
+            box-shadow: 0 10px 22px rgba(70, 90, 231, 0.22);
+            font: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+        }
+
+        .submit-button:hover {
+            box-shadow: 0 13px 26px rgba(70, 90, 231, 0.3);
+            filter: saturate(1.08);
+            transform: translateY(-1px);
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            .login-card {
+                padding: 29px 23px 30px;
+                border-radius: 22px;
+            }
+
+            .subtitle {
+                margin-bottom: 26px;
+            }
+
+            .sparkle-one {
+                left: 6%;
+            }
+
+            .sparkle-two {
+                right: 7%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="card p-4 rounded-4 shadow-sm">
-        <h3 class="fw-bold text-center text-primary mb-2"><i class="bi bi-box-seam me-2"></i>QUẢN LÝ KHO AI</h3>
-        <p class="text-center text-muted mb-4">Vui lòng đăng nhập để tiếp tục</p>
+    <div class="decoration decoration-top" aria-hidden="true"></div>
+    <div class="decoration decoration-bottom" aria-hidden="true"></div>
+    <div class="sparkle sparkle-one" aria-hidden="true"></div>
+    <div class="sparkle sparkle-two" aria-hidden="true"></div>
+
+    <main class="login-card">
+        <div class="brand-mark" aria-hidden="true">
+            <i class="bi bi-box-seam-fill"></i>
+            <span class="brand-ai">AI</span>
+        </div>
+        <h1>QUẢN LÝ KHO AI</h1>
+        <p class="subtitle">Vui lòng đăng nhập để tiếp tục</p>
 
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-danger py-2 text-center" role="alert">{{ message }}</div>
+                <div class="form-error" role="alert">{{ message }}</div>
             {% endfor %}
         {% endif %}
 
         <form method="POST">
             {% csrf_token %}
-            <div class="mb-3">
-                <label class="form-label fw-bold">Tên đăng nhập</label>
-                <input type="text" name="ten_dang_nhap" class="form-control" required placeholder="Nhập tên đăng nhập...">
+            <div class="form-field">
+                <label for="username">Tên đăng nhập</label>
+                <div class="input-wrap">
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <input
+                        type="text"
+                        id="username"
+                        name="ten_dang_nhap"
+                        autocomplete="username"
+                        placeholder="Nhập tên đăng nhập..."
+                        required
+                        autofocus
+                    >
+                </div>
             </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Mật khẩu</label>
-                <input type="password" name="password" class="form-control" required placeholder="Nhập mật khẩu...">
+
+            <div class="form-field">
+                <label for="password">Mật khẩu</label>
+                <div class="input-wrap">
+                    <i class="bi bi-lock" aria-hidden="true"></i>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        autocomplete="current-password"
+                        placeholder="Nhập mật khẩu..."
+                        required
+                    >
+                    <button
+                        class="password-toggle"
+                        type="button"
+                        aria-label="Hiện mật khẩu"
+                        aria-pressed="false"
+                    >
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Đăng Nhập</button>
+
+            <button type="submit" class="submit-button">Đăng Nhập</button>
         </form>
-    </div>
+    </main>
+
+    <script>
+        const passwordInput = document.getElementById("password");
+        const passwordToggle = document.querySelector(".password-toggle");
+
+        passwordToggle.addEventListener("click", () => {
+            const showPassword = passwordInput.type === "password";
+            passwordInput.type = showPassword ? "text" : "password";
+            passwordToggle.setAttribute("aria-pressed", String(showPassword));
+            passwordToggle.setAttribute(
+                "aria-label",
+                showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+            );
+            passwordToggle.querySelector("i").className = showPassword
+                ? "bi bi-eye-slash"
+                : "bi bi-eye";
+        });
+    </script>
 </body>
 
 </html>
